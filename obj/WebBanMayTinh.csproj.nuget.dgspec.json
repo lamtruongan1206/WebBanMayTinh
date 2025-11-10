@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj": {}
+    "C:\\Users\\fpt\\Desktop\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj": {}
   },
   "projects": {
-    "D:\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj": {
+    "C:\\Users\\fpt\\Desktop\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj",
+        "projectUniqueName": "C:\\Users\\fpt\\Desktop\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj",
         "projectName": "WebBanMayTinh",
-        "projectPath": "D:\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj",
+        "projectPath": "C:\\Users\\fpt\\Desktop\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj",
         "packagesPath": "C:\\Users\\fpt\\.nuget\\packages\\",
-        "outputPath": "D:\\WEB\\WebBanMayTinh\\obj\\",
+        "outputPath": "C:\\Users\\fpt\\Desktop\\WEB\\WebBanMayTinh\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",

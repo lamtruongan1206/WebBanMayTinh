@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9EMy2ZGLrFo=",
+  "dgSpecHash": "XzGHKr0BMO4=",
   "success": true,
-  "projectFilePath": "D:\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj",
+  "projectFilePath": "C:\\Users\\fpt\\Desktop\\WEB\\WebBanMayTinh\\WebBanMayTinh.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\fpt\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\fpt\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

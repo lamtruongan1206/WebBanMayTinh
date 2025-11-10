@@ -8,7 +8,8 @@
     <h1>Danh sách máy tính</h1>
 
     <!-- Nút quay lại trang ban đầu -->
-    <div class="mb-3">
+    <div class="mb-3 d-flex justify-content-start gap-2">
+        <a asp-action="Add" class="btn btn-success">Thêm máy tính mới</a>
         <a asp-action="Index" class="btn btn-secondary">Quay lại trang ban đầu</a>
     </div>
 
@@ -52,7 +53,7 @@
                         </p>
                         <div class="btn-group" role="group">
                             <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Cập nhật</a>
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Chi tiết</a>
+                            <a asp-action="Detail" asp-route-id="@item.Id" class="btn btn-sm btn-info">Chi tiết</a>
                             <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>
                         </div>
                     </div>

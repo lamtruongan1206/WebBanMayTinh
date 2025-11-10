@@ -6,29 +6,51 @@ namespace WebBanMayTinh.Controllers
 {
     public class LoginController : Controller
     {
-        ShopBanMayTinhContext conn = new ShopBanMayTinhContext();
+    ShopBanMayTinhContext _context = new ShopBanMayTinhContext();
 
-        [HttpGet]
+
+        // GET: /Login
         public IActionResult Login()
         {
+            // Nếu đã login rồi, chuyển thẳng sang Admin hoặc User
+            var role = HttpContext.Session.GetString("UserRole");
+            if (!string.IsNullOrEmpty(role))
+            {
+                if (role == "Admin")
+                    return RedirectToAction("Index", "Admin"); // Admin
+                else
+                    return RedirectToAction("Index", "User"); // User
+            }
+
             return View();
         }
 
+        // POST: /Login/LoginAction
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult LoginAction(string email, string password)
         {
-            var user = conn.Users.Include(u => u.Role)
-                                 .FirstOrDefault(u => u.Email == email && u.Password == password);
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            {
+                ViewBag.LoginError = "Vui lòng nhập email và mật khẩu.";
+                return View("Login");
+            }
+
+            // Kiểm tra email + password
+            var user = _context.Users
+                               .Include(u => u.Role)
+                               .FirstOrDefault(u => u.Email == email && u.Password == password);
 
             if (user != null)
             {
-                if (user.Role != null && user.Role.Name == "Admin")
-                {
-                    return RedirectToAction("Index", "Admin"); // chuyển sang trang Admin
-                }
+                // Lưu thông tin đăng nhập vào session
+                HttpContext.Session.SetString("UserEmail", user.Email);
+                HttpContext.Session.SetString("UserRole", user.Role?.Name ?? "User");
 
-                // Chuyển sang trang User nếu không phải Admin
+                // Chuyển sang Admin hoặc User dựa vào Role
+                if (user.Role != null && user.Role.Name == "Admin")
+                    return RedirectToAction("Index", "Admin");
+
                 return RedirectToAction("Index", "User");
             }
 
@@ -37,14 +59,15 @@ namespace WebBanMayTinh.Controllers
             return View("Login");
         }
 
-
+        // POST: /Login/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
-            // Xử lý đăng xuất (nếu có session hoặc cookie, xóa chúng ở đây)
-            return RedirectToAction("Login", "Login");
-        }
+            // Xóa session khi đăng xuất
+            HttpContext.Session.Clear();
 
+            return RedirectToAction("Login");
+        }
     }
 }

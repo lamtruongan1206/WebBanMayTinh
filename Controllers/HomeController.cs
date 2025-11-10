@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
@@ -14,48 +14,47 @@ public class HomeController : Controller
     {
         _logger = logger;
     }
-
     public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
     {
-        // L?y d? li?u c? b?n
+        
         var query = conn.Computers
             .Include(c => c.Categories)
             .Include(c => c.Images)
             .AsQueryable();
 
-        // L?c theo t�n
+    
         if (!string.IsNullOrEmpty(searchName))
         {
             query = query.Where(c => c.Name.Contains(searchName));
         }
 
-        // L?c theo h�ng s?n xu?t
+       
         if (!string.IsNullOrEmpty(searchManufacturer))
         {
             query = query.Where(c => c.Manufacturer.Contains(searchManufacturer));
         }
 
-        // L?c theo kho?ng gi�
+      
         if (priceFrom.HasValue)
             query = query.Where(c => c.Price >= priceFrom.Value);
         if (priceTo.HasValue)
             query = query.Where(c => c.Price <= priceTo.Value);
 
-        // T?ng s? b?n ghi sau l?c
+   
         int totalItems = query.Count();
 
-        // Ph�n trang
+        // Phân trang
         var computers = query
             .OrderBy(c => c.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
 
-        // Truy?n d? li?u ph�n trang qua ViewBag
+        // Truy?n d? li?u phân trang qua ViewBag
         ViewBag.CurrentPage = page;
         ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-        // Truy?n l?i c�c gi� tr? t�m ki?m ?? gi? tr�n form
+        // Truy?n l?i các giá tr? tìm ki?m ?? gi? trên form
         ViewBag.SearchName = searchName;
         ViewBag.SearchManufacturer = searchManufacturer;
         ViewBag.PriceFrom = priceFrom;
@@ -64,6 +63,20 @@ public class HomeController : Controller
         return View(computers);
     }
 
+    [HttpGet]
+    public IActionResult Detail(Guid id)
+    {
+        // Lấy máy tính theo id, bao gồm các ảnh
+        var computer = conn.Computers
+            .Include(c => c.Images)
+            .Include(c => c.Categories) // Nếu muốn hiển thị tên danh mục
+            .FirstOrDefault(c => c.Id == id);
+
+        if (computer == null) return NotFound();
+
+        // Truyền model vào view
+        return View(computer);
+    }
     public IActionResult Privacy()
     {
         return View();

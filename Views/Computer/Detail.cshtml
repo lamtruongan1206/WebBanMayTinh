@@ -10,7 +10,7 @@
     <div class="row">
         <!-- Ảnh chính -->
         <div class="col-md-4">
-            <h5>Ảnh chính</h5>
+          <!--  <h5>Ảnh chính</h5> -->
             @{
                 var mainImage = Model.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
             }
@@ -60,7 +60,7 @@
     <!-- Ảnh phụ -->
     <div class="row mt-4">
         <div class="col">
-            <h5>Ảnh phụ</h5>
+           <!-- <h5>Ảnh phụ</h5> -->
             @if (Model.Images != null && Model.Images.Any(i => !i.IsMain))
             {
                 foreach (var img in Model.Images.Where(i => !i.IsMain))
