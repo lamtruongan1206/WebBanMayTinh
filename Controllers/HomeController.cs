@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
-using WebBanMayTinh.Models.Entities;
 
 namespace WebBanMayTinh.Controllers;
 

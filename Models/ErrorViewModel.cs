@@ -1,4 +1,4 @@
-namespace WebBanMayTinh.Models.Entities
+namespace WebBanMayTinh.Models
 {
     public class ErrorViewModel
     {

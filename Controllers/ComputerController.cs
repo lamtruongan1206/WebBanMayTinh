@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Models.DTO;
-using WebBanMayTinh.Models.Entities;
 
 namespace WebBanMayTinh.Controllers
 {

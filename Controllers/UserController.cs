@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebBanMayTinh.Models.Entities;
 using WebBanMayTinh.Models;
 using Microsoft.EntityFrameworkCore;
 

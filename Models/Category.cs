@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebBanMayTinh.Models.Entities;
+namespace WebBanMayTinh.Models;
 
 public partial class Category
 {
