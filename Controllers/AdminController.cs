@@ -8,7 +8,13 @@ namespace WebBanMayTinh.Controllers
 {
     public class AdminController : Controller
     {
-        ShopBanMayTinhContext conn = new ShopBanMayTinhContext();
+        ShopBanMayTinhContext conn;
+
+        public AdminController(ShopBanMayTinhContext conn)
+        {
+            this.conn = conn;
+        }
+
         public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
         {
             // Lấy dữ liệu cơ bản
@@ -57,6 +63,81 @@ namespace WebBanMayTinh.Controllers
 
             return View(computers);
         }
+
+        public IActionResult Shop(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
+        {
+            // Lấy dữ liệu cơ bản
+            var query = conn.Computers
+                .Include(c => c.Categories)
+                .Include(c => c.Images)
+                .AsQueryable();
+
+            // Lọc theo tên
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                query = query.Where(c => c.Name.Contains(searchName));
+            }
+
+            // Lọc theo hãng sản xuất
+            if (!string.IsNullOrEmpty(searchManufacturer))
+            {
+                query = query.Where(c => c.Manufacturer.Contains(searchManufacturer));
+            }
+
+            // Lọc theo khoảng giá
+            if (priceFrom.HasValue)
+                query = query.Where(c => c.Price >= priceFrom.Value);
+            if (priceTo.HasValue)
+                query = query.Where(c => c.Price <= priceTo.Value);
+
+            // Tổng số bản ghi sau lọc
+            int totalItems = query.Count();
+
+            // Phân trang
+            var computers = query
+                .OrderBy(c => c.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Truyền dữ liệu phân trang qua ViewBag
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            // Truyền lại các giá trị tìm kiếm để giữ trên form
+            ViewBag.SearchName = searchName;
+            ViewBag.SearchManufacturer = searchManufacturer;
+            ViewBag.PriceFrom = priceFrom;
+            ViewBag.PriceTo = priceTo;
+
+            return View(computers);
+        }
+
+        public IActionResult Accounts()
+        {
+            var users = conn.Users;
+            return View(users);
+        }
+
+        public IActionResult AccountAdd()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AccountAdd(User model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            conn.Users.Add(model);
+            await conn.SaveChangesAsync();
+
+            return RedirectToAction("Accounts"); // danh sách user
+        }
+
         [HttpGet]
         public IActionResult Add()
         {

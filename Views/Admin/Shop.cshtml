@@ -1,0 +1,139 @@
+﻿@model IEnumerable<Computer>
+
+@{
+    ViewData["Title"] = "Danh sách máy tính";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
+}
+
+
+<h1>Danh sách máy tính</h1>
+
+<!-- Nút quay lại trang ban đầu -->
+<div class="mb-3 d-flex justify-content-start gap-2">
+    <a asp-action="Add" class="btn btn-success">Thêm máy tính mới</a>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại trang ban đầu</a>
+</div>
+
+<!-- Form tìm kiếm -->
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <input type="text" name="searchName" value="@ViewBag.SearchName" class="form-control" placeholder="Tên máy" />
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="searchManufacturer" value="@ViewBag.SearchManufacturer" class="form-control" placeholder="Hãng sản xuất" />
+    </div>
+    <div class="col-md-2">
+        <input type="number" name="priceFrom" value="@ViewBag.PriceFrom" class="form-control" placeholder="Giá từ" min="0" />
+    </div>
+    <div class="col-md-2">
+        <input type="number" name="priceTo" value="@ViewBag.PriceTo" class="form-control" placeholder="Giá đến" min="0" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Tìm kiếm</button>
+    </div>
+</form>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        var mainImage = item.Images?.FirstOrDefault(i => i.IsMain)?.Url
+        ?? item.Images?.FirstOrDefault()?.Url
+        ?? "~/images/default.png";
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0 d-flex flex-row align-items-stretch">
+
+                <!-- Khung ảnh -->
+                <div class="card-img-left d-flex align-items-center justify-content-center bg-light"
+                     style="width: 220px; height: 220px; overflow: hidden; border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
+                    <img src="@Url.Content(mainImage)" alt="@item.Name"
+                         class="img-fluid"
+                         style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                </div>
+
+                <!-- Thông tin sản phẩm -->
+                <div class="card-body d-flex flex-column justify-content-between" style="flex: 1;">
+                    <div>
+                        <h5 class="card-title text-primary fw-bold">@item.Name</h5>
+                        <p class="card-text mb-2"><strong>Hãng:</strong> @item.Manufacturer</p>
+                        <p class="card-text mb-2"><strong>Giá:</strong> @String.Format("{0:N0} ₫", item.Price)</p>
+                        <p class="card-text mb-2"><strong>Số lượng:</strong> @item.Quantity</p>
+                        <p class="card-text mb-2"><strong>Danh mục:</strong> @item.Categories?.Name</p>
+                    </div>
+
+                    <div class="btn-group mt-2" role="group">
+                        <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Cập nhật</a>
+                        <a asp-action="Detail" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Chi tiết</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+<!-- Phân trang -->
+<div class="mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @if ((int)ViewBag.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                       asp-route-searchName="@ViewBag.SearchName"
+                       asp-route-searchManufacturer="@ViewBag.SearchManufacturer"
+                       asp-route-priceFrom="@ViewBag.PriceFrom"
+                       asp-route-priceTo="@ViewBag.PriceTo">
+                        Previous
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            }
+
+            @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+            {
+                if (i == (int)ViewBag.CurrentPage)
+                {
+                    <li class="page-item active"><span class="page-link">@i</span></li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i"
+                           asp-route-searchName="@ViewBag.SearchName"
+                           asp-route-searchManufacturer="@ViewBag.SearchManufacturer"
+                           asp-route-priceFrom="@ViewBag.PriceFrom"
+                           asp-route-priceTo="@ViewBag.PriceTo">
+                            @i
+                        </a>
+                    </li>
+                }
+            }
+
+            @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                       asp-route-searchName="@ViewBag.SearchName"
+                       asp-route-searchManufacturer="@ViewBag.SearchManufacturer"
+                       asp-route-priceFrom="@ViewBag.PriceFrom"
+                       asp-route-priceTo="@ViewBag.PriceTo">
+                        Next
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            }
+        </ul>
+    </nav>
+</div>
+
+
+
+

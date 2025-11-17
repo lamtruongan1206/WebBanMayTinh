@@ -1,0 +1,62 @@
+﻿@model IEnumerable<Computer>
+@{
+    ViewData["Title"] = "Shop";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Start Hero Section -->
+<div class="hero">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-lg-5">
+                <div class="">
+                    <h1>
+                        <span class="d-block">Sản phẩm nổi bật</span>
+                    </h1>
+                    <p class="mb-4">
+                        Khám phá các sản phẩm máy tính chất lượng cao, từ laptop, PC đến linh kiện, tất cả đều có sẵn với giá tốt nhất.
+                    </p>
+                    <p>
+                        <a href="@Url.Action("Index", "Shop")" class="btn btn-secondary me-2">Mua ngay</a>
+                        <a href="@Url.Action("Index", "Shop")" class="btn btn-white-outline">Khám phá thêm</a>
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="hero-img-wrap">
+                    <img src="~/furni-1.0.0/images/couch.png" class="img-fluid" alt="Sản phẩm nổi bật" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Hero Section -->
+
+
+
+<div class="untree_co-section product-section before-footer-section">
+	<div class="container">
+		<div class="row">
+
+			@foreach(var item in Model)
+			{
+				var imageUrl = item.Images?.FirstOrDefault(i => i.IsMain)?.Url
+				?? item.Images?.FirstOrDefault()?.Url
+				?? "~/furni-1.0.0/images/default.png";
+
+				<div class="col-12 col-md-4 col-lg-3 mb-5">
+					<a class="product-item" href="@Url.Action("Details", "Shop", new { id = item.Id })">
+						<img src="@Url.Content(imageUrl)" class="img-fluid product-thumbnail" />
+						<h3 class="product-title">@item.Name</h3>
+						<strong class="product-price">@String.Format("{0:N0} ₫", item.Price)</strong>
+
+						<span class="icon-cross">
+							<img src="@Url.Content("~/furni-1.0.0/images/cross.svg")" class="img-fluid" />
+						</span>
+					</a>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
