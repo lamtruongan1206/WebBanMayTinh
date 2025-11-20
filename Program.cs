@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,15 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddDbContext<ShopBanMayTinhContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login"; // Trang login
+        options.AccessDeniedPath = "/Login"; // Trang từ chối truy cập
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

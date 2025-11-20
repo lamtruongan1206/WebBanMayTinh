@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
 
@@ -10,17 +14,18 @@ namespace WebBanMayTinh.Controllers
 
 
         // GET: /Login
-        public IActionResult Login()
+        public IActionResult Index()
         {
-            // Nếu đã login rồi, chuyển thẳng sang Admin hoặc User
-            var role = HttpContext.Session.GetString("UserRole");
-            if (!string.IsNullOrEmpty(role))
-            {
-                if (role == "Admin")
-                    return RedirectToAction("Index", "Admin"); // Admin
-                else
-                    return RedirectToAction("Index", "User"); // User
-            }
+            //// Nếu đã login rồi, chuyển thẳng sang Admin hoặc User
+            //var role = HttpContext.Session.GetString("UserRole");
+
+            //if (!string.IsNullOrEmpty(role))
+            //{
+            //    if (role == "Admin")
+            //        return RedirectToAction("Index", "Admin"); // Admin
+            //    else
+            //        return RedirectToAction("Index", "Home"); // User
+            //}
 
             return View();
         }
@@ -33,41 +38,63 @@ namespace WebBanMayTinh.Controllers
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
                 ViewBag.LoginError = "Vui lòng nhập email và mật khẩu.";
-                return View("Login");
+                return View("Index");
             }
 
             // Kiểm tra email + password
             var user = _context.Users
                                .Include(u => u.Role)
-                               .FirstOrDefault(u => u.Email == email && u.Password == password);
-
-            if (user != null)
+                               .FirstOrDefault(u => u.Email == email || u.Username == email);
+            if (user == null)
             {
-                // Lưu thông tin đăng nhập vào session
-                HttpContext.Session.SetString("UserEmail", user.Email);
-                HttpContext.Session.SetString("UserRole", user.Role?.Name ?? "User");
-
-                // Chuyển sang Admin hoặc User dựa vào Role
-                if (user.Role != null && user.Role.Name == "Admin")
-                    return RedirectToAction("Index", "Admin");
-
-                return RedirectToAction("Index", "User");
+                ViewBag.LoginError = "Email hoặc mật khẩu không đúng.";
+                return View("Index");
             }
 
-            // Nếu đăng nhập sai
-            ViewBag.LoginError = "Email hoặc mật khẩu không đúng.";
-            return View("Login");
+            PasswordHasher<User> hasher = new PasswordHasher<User>();
+            var result = hasher.VerifyHashedPassword(user, user.Password ?? "", password);
+            if (result == PasswordVerificationResult.Failed)
+            {
+                Console.WriteLine("Sai mật khẩu");
+                ViewBag.LoginError = "Email hoặc mật khẩu không đúng.";
+                return View("Index");
+            }
+
+            // Lưu thông tin đăng nhập vào session
+            HttpContext.Session.SetString("UserEmail", user.Email ?? "");
+            HttpContext.Session.SetString("Username", user.Username ?? "");
+            HttpContext.Session.SetString("UserRole", user.Role?.Name ?? "User");
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Email ?? ""),
+                new Claim(ClaimTypes.Role, user.Role?.Name ?? "User")
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity));
+
+            Console.WriteLine("user role: ", user.Role.Name);
+
+            // Chuyển sang Admin hoặc User dựa vào Role
+            if (user.Role != null && user.Role.Name == "Admin")
+                return RedirectToAction("Index", "Admin");
+            //return RedirectToAction("Index", "User");
+            return RedirectToAction("Index", "Home");
+
+
         }
 
         // POST: /Login/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            // Xóa session khi đăng xuất
             HttpContext.Session.Clear();
-
-            return RedirectToAction("Login");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Login");
         }
     }
 }

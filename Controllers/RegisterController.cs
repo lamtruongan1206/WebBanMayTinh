@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebBanMayTinh.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebBanMayTinh.Controllers
 {
@@ -8,41 +9,39 @@ namespace WebBanMayTinh.Controllers
     {
         ShopBanMayTinhContext conn = new ShopBanMayTinhContext();
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Index()
         {
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult RegisterAction(string fullName, string phoneNumber, string address, string email, string password)
+        public IActionResult RegisterAction(User user)
         {
-            var existingUser = conn.Users.FirstOrDefault(u => u.Email == email);
+            var existingUser = conn.Users.FirstOrDefault(u => (u.Email == user.Email || u.Username == user.Username));
             if (existingUser != null)
             {
-                ViewBag.RegisterError = "Email đã được sử dụng.";
-                return View("Register");
+                ViewBag.RegisterError = "Tài khoản này đã được sử dụng.";
+                return View("Index");
             }
-            var userRole = conn.Roles.FirstOrDefault(r => r.Name == "User");
-            if (userRole == null)
+            var roleUser = conn.Roles.FirstOrDefault(r => r.Name == Common.RoleEnums.User.ToString());
+
+            user.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
+            user.CreatedAt = DateOnly.FromDateTime(DateTime.Now);
+            user.Role = roleUser;
+
+            PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
+
+            if (string.IsNullOrEmpty(user.Password))
             {
-                ViewBag.RegisterError = "Vai trò người dùng không tồn tại.";
-                return View("Register");
+                ViewBag.RegisterError = "Mật khẩu không thể bỏ trống";
+                return View("Index");
             }
-            User newUser = new User ()
-            {
-                Id = Guid.NewGuid(),
-                Username = fullName,
-                Email = email,
-                Password = password,
-                Address = address,
-                Phone = phoneNumber,
-                RoleId = conn.Roles.FirstOrDefault(r => r.Name == "User")!.Id,
-            };
-            conn.Users.Add(newUser);
+
+            user.Password = passwordHasher.HashPassword(user, user.Password);
+
+            conn.Users.Add(user);
             conn.SaveChanges();
-            return RedirectToAction("Login", "Login");
+            return RedirectToAction("Index", "Login");
         }
-
-
     }
 }

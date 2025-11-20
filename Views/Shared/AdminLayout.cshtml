@@ -5,7 +5,7 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 
-    var userName = HttpContextAccessor.HttpContext?.Session?.GetString("UserName")
+    var userName = HttpContextAccessor.HttpContext?.Session?.GetString("Username")
                    ?? HttpContextAccessor.HttpContext?.Session?.GetString("UserEmail")
                    ?? "Admin";
 }
@@ -515,10 +515,13 @@
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="auth-login-basic.html">
-                                            <i class="bx bx-power-off me-2"></i>
-                                            <span class="align-middle">Log Out</span>
-                                        </a>
+                                        <form asp-action="Logout" asp-controller="Login" method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bx bx-power-off me-2"></i>
+                                                <span class="align-middle">Log Out</span>
+                                            </button>
+                                            @Html.AntiForgeryToken()
+                                        </form>
                                     </li>
                                 </ul>
                             </li>

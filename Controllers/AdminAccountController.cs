@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,6 +7,7 @@ using WebBanMayTinh.Models;
 
 namespace WebBanMayTinh.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminAccountController : Controller
     {
         private readonly ShopBanMayTinhContext _context;
@@ -59,12 +57,13 @@ namespace WebBanMayTinh.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Username,Password,FirstName,LastName,Email,Phone,Address,RoleId")] User user)
+        public async Task<IActionResult> Create(User user)
         {
             if (ModelState.IsValid)
             {
                 user.Id = Guid.NewGuid();
-                var hashedPassword = passwordHasher.HashPassword(user, user.Password ?? defaultPassword);
+                var hashedPassword = passwordHasher.HashPassword(user, defaultPassword);
+                user.Password = hashedPassword;
                 _context.Add(user);
                 user.CreatedAt = DateOnly.FromDateTime(DateTime.Now);
                 await _context.SaveChangesAsync();

@@ -3,9 +3,11 @@ using WebBanMayTinh.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebBanMayTinh.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebBanMayTinh.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         ShopBanMayTinhContext conn;

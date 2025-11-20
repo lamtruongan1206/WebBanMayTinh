@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Đăng ký tài khoản";
+    Layout = null;
 }
 
 <!doctype html>
@@ -42,36 +43,51 @@
                         }
 
                         <form id="formAuthentication" class="mb-6" asp-action="RegisterAction" asp-controller="Register" method="post" onsubmit="return validateForm()">
-                            @Html.AntiForgeryToken()
+                            @Html.AntiForgeryToken()    
 
-                            <div class="mb-3">
-                                <label for="fullName" class="form-label">Họ và tên</label>
-                                <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Nhập họ và tên" required />
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="fullName" class="form-label">Họ*</label>
+                                        <input type="text" class="form-control" id="fullName" name="FirstName" placeholder="Họ" required />
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="lastName" class="form-label">Tên*</label>
+                                        <input type="text" class="form-control" id="lastName" name="LastName" placeholder="Tên" required />
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
+                                <label for="username" class="form-label">Tài khoản*</label>
+                                <input type="text" class="form-control" id="username" name="Username" placeholder="Nhập tên tài khoản" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email*</label>
                                 <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email" required />
                             </div>
 
                             <div class="mb-3">
-                                <label for="password" class="form-label">Mật khẩu</label>
+                                <label for="password" class="form-label">Mật khẩu*</label>
                                 <input type="password" class="form-control" id="password" name="password" placeholder="Tối thiểu 8 ký tự" required minlength="8" />
                             </div>
 
                             <div class="mb-3">
-                                <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                                <label for="confirmPassword" class="form-label">Xác nhận mật khẩu*</label>
                                 <input type="password" class="form-control" id="confirmPassword" placeholder="Nhập lại mật khẩu" required />
                             </div>
 
                             <div class="mb-3">
                                 <label for="phoneNumber" class="form-label">Số điện thoại</label>
-                                <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Nhập số điện thoại (10 số)" pattern="^[0-9]{10}$" required />
+                                <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Nhập số điện thoại (10 số)" pattern="^[0-9]{10}$" />
                             </div>
 
                             <div class="mb-3">
                                 <label for="address" class="form-label">Địa chỉ</label>
-                                <input type="text" class="form-control" id="address" name="address" placeholder="Nhập địa chỉ" required />
+                                <input type="text" class="form-control" id="address" name="address" placeholder="Nhập địa chỉ" />
                             </div>
 
                             <button type="submit" class="btn btn-primary d-grid w-100">Đăng ký</button>
@@ -79,7 +95,7 @@
 
                         <p class="text-center">
                             <span>Đã có tài khoản?</span>
-                            <a asp-controller="Login" asp-action="Login">Đăng nhập ngay</a>
+                            <a asp-controller="Login" asp-action="Index">Đăng nhập ngay</a>
                         </p>
                     </div>
                 </div>
@@ -103,7 +119,7 @@
                 return false;
             }
 
-            if (!/^[0-9]{10}$/.test(phone)) {
+            if (!/^[0-9]{10}$/.test(phone) && !phone.trim() === "") {
                 alert("Số điện thoại phải gồm đúng 10 chữ số!");
                 return false;
             }

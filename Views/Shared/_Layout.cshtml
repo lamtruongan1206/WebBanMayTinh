@@ -1,6 +1,11 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    
+    var username = HttpContextAccessor.HttpContext?.Session.GetString("Username");
+    var role = HttpContextAccessor.HttpContext?.Session.GetString("Role");
 }
 
 <!DOCTYPE html>
@@ -24,6 +29,13 @@
     <title>
         Computer Shop
     </title>
+
+    <style>
+        .custom-navbar
+        .custom-navbar-cta li:first-child {
+            margin-right: 0;
+        }
+    </style>
 </head>
 <body>
     <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark"
@@ -64,15 +76,44 @@
                 </ul>
 
                 <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
-                    <li>
-                        <a class="nav-link" href="#"><img src="~/furni-1.0.0/images/user.svg" /></a>
+                    <li class="nav-item dropdown">
+                        @if (!string.IsNullOrEmpty(username))
+                        {
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <img class="" src="~/furni-1.0.0/images/user.svg" style="width: 20px;" />
+                                <span class="ms-2">@username</span>
+                            </a>
+                        }
+                        else {
+                            <div class="d-flex align-items-center justify-content-center text-white">
+                                <a class="nav-link" role="button" href="/Login">Đăng nhập</a>
+                                <a class="nav-link" role="button" href="/Register">Đăng ký</a>
+                            </div>
+                        }
+
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li class="mr-0"><a class="dropdown-item" href="/Profile">Thông tin cá nhân</a></l>
+                            @* <li><a class="dropdown-item" href="/Order">Đơn hàng</a></li> *@
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-action="Logout" asp-controller="Login">
+                                        <button type="submit" class="dropdown-item text-danger w-100" href="">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
                     </li>
-                    <li>
-                        <a class="nav-link" href="cart.html">
-                            <img src="~/furni-1.0.0/images/cart.svg" />
-                        </a>
-                    </li>
+
+                    @if (!string.IsNullOrEmpty(username))
+                    {
+                        <li>
+                            <a class="nav-link" href="cart.html">
+                                <img src="~/furni-1.0.0/images/cart.svg" />
+                            </a>
+                        </li>
+                    }
                 </ul>
+
             </div>
         </div>
     </nav>
@@ -81,7 +122,7 @@
     <footer class="footer-section">
         <div class="container relative">
             <div class="sofa-img">
-                <img src="~/furni-1.0.0/images/sofa.png" alt="Hình ảnh" class="img-fluid" />
+                <img src="~/furni-1.0.0/images/footer-img.png" alt="Hình ảnh" class="img-fluid" />
             </div>
 
             <div class="row">
