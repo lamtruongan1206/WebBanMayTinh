@@ -23,7 +23,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/Login"; // Trang login
-        options.AccessDeniedPath = "/Login"; // Trang từ chối truy cập
+        options.AccessDeniedPath = "/Error/403"; // Trang từ chối truy cập
     });
 
 builder.Services.AddAuthorization();

@@ -1,0 +1,80 @@
+﻿@model WebBanMayTinh.Models.User
+
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    var avatar = Model.Avatar ?? "~/assets/img/avatars/user_default.png";
+}
+
+<div class="container" style="max-width: 800px;margin: 100px auto">
+    <div class="card shadow-lg p-4 border-0 rounded-4">
+        <h3 class="mb-4 fw-bold text-center">Thông tin cá nhân</h3>
+
+        <form class="" asp-action="UpdateProfile" asp-controller="Account" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <input type="hidden" asp-for="Id" />
+
+                <!-- Avatar -->
+                <div class="col-md-4 text-center mb-4">
+                    <img id="avatarPreview" src="@avatar" class="rounded-circle border" width="150" height="150" style="object-fit: cover;" />
+
+                    <div class="mt-3">
+                        <label class="btn btn-outline-primary btn-sm">
+                            Chọn ảnh đại diện
+                            <input type="file" name="avatar" id="avatarInput" class="d-none" accept="image/*" />
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Thông tin -->
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label class="form-label">Tên tài khoản</label>
+                        <input asp-for="Username" class="form-control" disabled />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" disabled />
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Họ</label>
+                            <input asp-for="FirstName" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên</label>
+                            <input asp-for="LastName" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input asp-for="Phone" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input asp-for="Address" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-3">
+                <button type="submit" class="btn btn-primary px-4">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const input = document.getElementById("avatarInput");
+    const preview = document.getElementById("avatarPreview");
+
+    input.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+        }
+    });
+</script>

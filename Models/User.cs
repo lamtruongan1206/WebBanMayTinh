@@ -30,6 +30,8 @@ public partial class User
 
     [Display(Name = "Vai trò")]
     public Guid? RoleId { get; set; }
+    [Display(Name = "Ảnh đại diện")]
+    public string? Avatar { get; set; }
 
     [Display(Name = "Ngày tạo")]
     public DateOnly? CreatedAt { get; set; }

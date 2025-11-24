@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -64,6 +65,8 @@ namespace WebBanMayTinh.Controllers
             HttpContext.Session.SetString("UserEmail", user.Email ?? "");
             HttpContext.Session.SetString("Username", user.Username ?? "");
             HttpContext.Session.SetString("UserRole", user.Role?.Name ?? "User");
+            HttpContext.Session.SetString("Avatar", user.Avatar ?? "");
+            //HttpContext.Session.SetString("User", JsonSerializer);
 
             var claims = new List<Claim>
             {
