@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+
 // Thêm dịch vụ session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
