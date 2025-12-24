@@ -8,7 +8,7 @@
     var username = HttpContextAccessor.HttpContext?.Session?.GetString("Username")
                    ?? "Không tên";
     var userEmail = HttpContextAccessor.HttpContext?.Session?.GetString("UserEmail") ?? "Không xác định";
-    var avatar =  HttpContextAccessor.HttpContext?.Session?.GetString("Avatar");
+    var avatar = HttpContextAccessor.HttpContext?.Session?.GetString("Avatar");
 
     if (string.IsNullOrEmpty(avatar))
     {
@@ -26,7 +26,7 @@
     <meta charset="utf-8" />
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Computer shop</title>
+    <title>@ViewData["Title"] - Trang Quản Trị</title>
     <meta name="description" content="" />
     <link rel="icon" type="image/x-icon" href="~/sneat/assets/img/favicon/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -44,9 +44,9 @@
 <body>
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
-            <partial name="_AdminNavbarPartial" />
+            <partial name="_NavbarPartial" />
             <div class="layout-page">
-                <partial name="_AdminHeaderPartial" />
+                @* <partial name="_AdminHeaderPartial" /> *@
                 <div class="content-wrapper">
                     <div class="container mt-4">
                         @RenderBody()

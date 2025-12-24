@@ -4,29 +4,30 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
+using WebBanMayTinh.Services;
 
-namespace WebBanMayTinh.Controllers
+namespace WebBanMayTinh.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     [Authorize(Roles = "Admin")]
-    public class AdminAccountController : Controller
+    public class AccountController : Controller
     {
         private readonly ShopBanMayTinhContext _context;
         private PasswordHasher<User> passwordHasher;
-        private String defaultPassword = "Computershop";
-        public AdminAccountController(ShopBanMayTinhContext context)
+        private IUserService userService;
+        public AccountController(ShopBanMayTinhContext context, IUserService userService)
         {
             _context = context;
             passwordHasher = new PasswordHasher<User>();
+            this.userService = userService;
         }
 
-        // GET: AdminAccount
         public async Task<IActionResult> Index()
         {
-            var shopBanMayTinhContext = _context.Users.Include(u => u.Role);
-            return View(await shopBanMayTinhContext.ToListAsync());
+            var users = userService.GetUsers();
+            return View(users);
         }
 
-        // GET: AdminAccount/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -45,32 +46,32 @@ namespace WebBanMayTinh.Controllers
             return View(user);
         }
 
-        // GET: AdminAccount/Create
         public IActionResult Create()
         {
             ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name");
             return View();
         }
 
-        // POST: AdminAccount/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(User user)
         {
             if (ModelState.IsValid)
             {
-                user.Id = Guid.NewGuid();
-                var hashedPassword = passwordHasher.HashPassword(user, defaultPassword);
-                user.Password = hashedPassword;
-                _context.Add(user);
-                user.CreatedAt = DateOnly.FromDateTime(DateTime.Now);
-                await _context.SaveChangesAsync();
+                var ok = userService.AddUser(user);
+                if (!ok)
+                {
+                    TempData["Error"] = "Tạo mới người dùng không thành công";
+                    return BadRequest();
+                }
+                TempData["Success"] = "Tạo mới người dùng thành công";
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name", user.RoleId);
-            return View(user);
+            else
+            {
+                ViewBag["Error"] = "Thông tin không hợp lệ";
+                return BadRequest();
+            }
         }
 
         // GET: AdminAccount/Edit/5
@@ -90,9 +91,6 @@ namespace WebBanMayTinh.Controllers
             return View(user);
         }
 
-        // POST: AdminAccount/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, User user)
@@ -127,7 +125,6 @@ namespace WebBanMayTinh.Controllers
             return View(user);
         }
 
-        // GET: AdminAccount/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -146,7 +143,6 @@ namespace WebBanMayTinh.Controllers
             return View(user);
         }
 
-        // POST: AdminAccount/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)

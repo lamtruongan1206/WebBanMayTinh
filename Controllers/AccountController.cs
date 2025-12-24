@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
+using WebBanMayTinh.Services;
 using WebBanMayTinh.Utils;
 
 namespace WebBanMayTinh.Controllers
@@ -10,22 +11,28 @@ namespace WebBanMayTinh.Controllers
     public class AccountController : Controller
     {
         private readonly ShopBanMayTinhContext context;
-        public AccountController(ShopBanMayTinhContext context)
+        private ILogger<AccountController> logger;
+        private IUserService userService;
+        public AccountController(
+            ShopBanMayTinhContext context,
+            ILogger<AccountController> logger,
+            IUserService userService)
         {
             this.context = context;
+            this.logger = logger;
+            this.userService = userService;
         }
         // GET: AccountController
         [HttpGet]
-        public ActionResult Profile()
+        public ActionResult Profile(string? name = "")
         {
-            var username = HttpContext.Session.GetString("Username");
+            var user = context.Users.FirstOrDefault(x => x.Username == name || x.Email == name);
 
-            var user = context.Users.FirstOrDefault(x => x.Username == username);
-
-            if (username == null || user == null)
+            if (!User.Identity.IsAuthenticated || user == null)
             {
                 return Redirect("/login");
             }
+
 
             return View(user);
         }
@@ -37,19 +44,14 @@ namespace WebBanMayTinh.Controllers
         public async Task<ActionResult> UpdateProfile (User user, IFormFile? avatar)
         {
 
-            Console.WriteLine("Cập nhật thông tin cá nhân");
             if (!ModelState.IsValid)
                 return View(nameof(Profile), user);
-
-            Console.WriteLine("Id: " + user.Id);
-            Console.WriteLine("Username: " + user.Username);
 
             // Lấy user hiện tại trong DB
             var currentUser = context.Users.FirstOrDefault(u => u.Id == user.Id);
 
             if (currentUser == null)
             {
-                Console.WriteLine("Không thấy user");
                 return NotFound();
             }
 

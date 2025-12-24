@@ -1,18 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WebBanMayTinh.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using WebBanMayTinh.Models;
 using WebBanMayTinh.Models.DTO;
-using Microsoft.AspNetCore.Authorization;
 
-namespace WebBanMayTinh.Controllers
+namespace WebBanMayTinh.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     [Authorize(Roles = "Admin")]
-    public class AdminController : Controller
+    public class HomeController : Controller
     {
         ShopBanMayTinhContext conn;
 
-        public AdminController(ShopBanMayTinhContext conn)
+        public HomeController(ShopBanMayTinhContext conn)
         {
             this.conn = conn;
         }
@@ -381,4 +382,5 @@ namespace WebBanMayTinh.Controllers
             return View(computer);
         }
     }
+
 }

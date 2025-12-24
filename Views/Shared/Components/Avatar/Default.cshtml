@@ -1,0 +1,48 @@
+﻿@using WebBanMayTinh.Models.Views
+@using System.Security.Claims
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model HeaderUserVM
+
+<ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+
+    <li class="nav-item dropdown">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <img class="" src="@Model.Avatar" style="width: 20px; height: 20px" />
+                <span class="ms-2">@Model.UserName</span>
+            </a>
+        }
+        else
+        {
+            <div class="d-flex align-items-center justify-content-center text-white">
+                <a class="nav-link" role="button" href="/Login">Đăng nhập</a>
+                <a class="nav-link" role="button" href="/Register">Đăng ký</a>
+            </div>
+        }
+
+
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li class="mr-0">
+                <a class="dropdown-item" asp-action="Profile" asp-controller="Account" asp-route-name="@User.Identity.Name">Thông tin cá nhân</a>
+            </li>
+            @if (Model.Role.Equals("Admin"))
+            {
+                <li class="mr-0">
+                    <a class="dropdown-item" asp-action="Index" asp-controller="Admin" asp-route-name="@User.Identity.Name">Quản trị</a>
+                    </li>
+            }
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form asp-action="Logout" asp-controller="Login">
+                    <button type="submit" class="dropdown-item text-danger w-100" href="">Đăng xuất</button>
+                </form>
+            </li>
+        </ul>
+    </li>
+</ul>
