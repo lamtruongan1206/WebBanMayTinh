@@ -1,0 +1,56 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Vai trò";
+}
+
+@model IEnumerable<IdentityRole>
+
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Quản lý tài khoản /</span> Vai trò</h4>
+
+
+<div class="card">
+    <div class="d-flex justify-content-between">
+        <h5 class="card-header">Danh sách vai trò</h5>
+
+        <a asp-controller="Role" asp-action="Create">
+            <button type="button" class="btn btn-icon btn-primary m-3" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="Tạo mới vai trò">
+                <span class="tf-icons bx bx-plus"></span>
+            </button>
+        </a>
+    </div>
+    <div class="table-responsive text-nowrap">
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tên</th>
+                    <th style="width:120px">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+
+                @foreach (var i in Model)
+                {
+                    <tr>
+                        <td>@i.Name</td>
+                        <td>
+                            <div class="dropdown position-static">
+                                <button type="button" class="btn btn-primary btn-icon rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="icon-base bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <ul class="dropdown-menu" style="">
+                                    <li><a class="dropdown-item " asp-action="Edit" asp-route-id="@i.Id"><i class="bx bx-edit-alt me-1"></i> Sửa</a></li>
+                                    <li><a class="dropdown-item " asp-action="Delete" asp-route-id="@i.Id"><i class="bx bx-trash me-1"></i> Xóa</a></li>
+                                </ul>
+                                <div class="dropdown-menu">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

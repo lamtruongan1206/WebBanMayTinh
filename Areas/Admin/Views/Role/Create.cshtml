@@ -1,0 +1,32 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Tạo mới vai trò";
+}
+
+@model IdentityRole
+
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Quản lý tài khoản /</span> Tạo mới vai trò</h4>
+
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" asp-controller="Role" asp-area="Admin" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text"><i class="bx bx-text"></i></span>
+                    <input asp-for="Name" class="form-control" placeholder="Admin" />
+                </div>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex flex-row-reverse">
+                <button type="submit" class="btn btn-primary">Tạo</button>
+                <a asp-action="Index" asp-controller="Role" class="btn btn-link">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -21,8 +21,8 @@
         else
         {
             <div class="d-flex align-items-center justify-content-center text-white">
-                <a class="nav-link" role="button" href="/Login">Đăng nhập</a>
-                <a class="nav-link" role="button" href="/Register">Đăng ký</a>
+                <a class="nav-link" role="button" asp-controller="Account" asp-action="Login" >Đăng nhập</a>
+                <a class="nav-link" role="button" asp-controller="Account" asp-action="Create">Đăng ký</a>
             </div>
         }
 
@@ -39,7 +39,7 @@
             }
             <li><hr class="dropdown-divider"></li>
             <li>
-                <form asp-action="Logout" asp-controller="Login">
+                <form asp-action="Logout" asp-controller="Account">
                     <button type="submit" class="dropdown-item text-danger w-100" href="">Đăng xuất</button>
                 </form>
             </li>

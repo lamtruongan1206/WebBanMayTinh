@@ -137,19 +137,19 @@
                     <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
 
-                <div class="mb-3">
+                @* <div class="mb-3">
                     <label class="form-label" asp-for="RoleId"></label>
                     <div class="input-group input-group-merge">
 
                         <span class="input-group-text"><i class="bx bx-user-voice"></i></span>
 
-                        <select asp-for="RoleId" class="form-select " asp-items="ViewBag.RoleId">
+                        <select asp-for="RoleId" class="form-select " asp-items="ViewBag.Roles">
                             <option value="">-- Lựa chọn vai trò --</option>
                         </select>
                     </div>
 
                     <span asp-validation-for="RoleId" class="text-danger"></span>
-                </div>
+                </div> *@
 
                 <div class="d-flex flex-row-reverse">
                     <button type="submit" class="btn btn-primary">Tạo mới</button>

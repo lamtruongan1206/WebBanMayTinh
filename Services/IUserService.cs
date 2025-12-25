@@ -4,11 +4,12 @@ namespace WebBanMayTinh.Services
 {
     public interface IUserService
     {
-        bool AddUser(User user);
-        bool UpdateUser(User user);
-        bool DeleteUser(Guid id);
-        User? GetUser(Guid id);
-        IEnumerable<User> GetUsers();
-
+        Task<bool> AddUser(AppUser user, string password);
+        bool UpdateUser(AppUser user);
+        bool DeleteUser(string id);
+        User? GetUser(string id);
+        Task<IEnumerable<AppUser>> GetUsers();
+        Task<bool> Login(string user, string password);
+        void Logout();
     }
 }

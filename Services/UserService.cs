@@ -9,44 +9,55 @@ namespace WebBanMayTinh.Services
         private readonly ShopBanMayTinhContext context;
         private readonly ILogger<UserService> logger;
 
-        public UserService(ShopBanMayTinhContext context, ILogger<UserService> logger)
+
+        private UserManager<AppUser> userManager;
+        private SignInManager<AppUser> signInManager;
+
+
+        public UserService(ShopBanMayTinhContext context, ILogger<UserService> logger,
+            UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager) 
         {
             this.context = context;
             this.logger = logger;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
         }
 
-        public IEnumerable<User> GetUsers()
+        public async Task<IEnumerable<AppUser>> GetUsers()
         {
-            var users = context.Users
-                .Include(r => r.Role)
-                .ToList();
+            var users = await context.Users.ToListAsync();
             return users;
         }
 
-        bool IUserService.AddUser(User user)
+        async Task<bool> IUserService.Login(string username, string password)
         {
-            PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
-
-            var existingUser = context.Users.FirstOrDefault(u => u.Username == user.Username
-            || u.Email == user.Email);
-
-            if (existingUser != null)
-            {
-                logger.LogWarning("User is existing");
-                return false;
-            }
+            var existingUser = await userManager.FindByNameAsync(username);
+            if (existingUser == null) return false;
 
             try
             {
-                user.Id = Guid.NewGuid();
-                var hashedPassword = passwordHasher.HashPassword(user, "");
-                user.Password = hashedPassword;
-                
-                user.CreatedAt = user.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
+                SignInResult result = await signInManager.PasswordSignInAsync(existingUser, password, false, false);
+                return result.Succeeded;
+            } catch (Exception ex)
+            {
+                return false;
+            }
+        }
 
-                context.Users.Add(user);
-                context.SaveChanges();
-                return true;
+        async Task<bool> IUserService.AddUser(AppUser user, string password)
+        {
+            try
+            {
+                var result = await userManager.CreateAsync(user, password);
+
+                if (result.Succeeded)
+                    return true;
+                else
+                {
+                    logger.LogError("Tạo mới không thành công");
+                    return false;
+                }
             }
             catch (Exception ex)
             {
@@ -55,38 +66,47 @@ namespace WebBanMayTinh.Services
             }
         }
 
-        bool IUserService.DeleteUser(Guid id)
+        bool IUserService.DeleteUser(string id)
         {
-            var user = context.Users.FirstOrDefault(x => x.Id == id);
-            if (user == null)
-            {
-                logger.LogWarning("Không tồn tại User id = {id}", id);
-                return false;
-            }
+            //var user = context.Users.FirstOrDefault(x => x.Id == id);
+            //if (user == null)
+            //{
+            //    logger.LogWarning("Không tồn tại User id = {id}", id);
+            //    return false;
+            //}
 
-            try
-            {
-                context.Users.Remove(user);
-                context.SaveChanges();
-                return true;
-            } catch (Exception ex)
-            {
-                logger.LogError("Update User Error: {m}", ex.Message);
-                return false;
-            }
+            //try
+            //{
+            //    context.Users.Remove(user);
+            //    context.SaveChanges();
+            //    return true;
+            //} catch (Exception ex)
+            //{
+            //    logger.LogError("Update User Error: {m}", ex.Message);
+            //    return false;
+            //}
+            throw new NotImplementedException();
         }
 
-        User IUserService.GetUser(Guid id)
+        User IUserService.GetUser(string id)
         {
-            var user = context.Users.FirstOrDefault(x => x.Id==id);
-            return user;
+            //var user = context.Users.FirstOrDefault(x => x.Id==id);
+            //return user;
+            throw new NotImplementedException();
         }
 
-        bool IUserService.UpdateUser(User user)
+        bool IUserService.UpdateUser(AppUser user)
         {
-            context.Users.Update(user);
-            context.SaveChanges();
-            return true;
+            //context.Users.Update(user);
+            //context.SaveChanges();
+            //return true;
+            throw new NotImplementedException();
+
+        }
+
+        async void IUserService.Logout()
+        {
+            await signInManager.SignOutAsync();
         }
     }
 }

@@ -8,7 +8,7 @@ using WebBanMayTinh.Models.DTO;
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
         ShopBanMayTinhContext conn;
@@ -127,19 +127,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AccountAdd(User model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            conn.Users.Add(model);
-            await conn.SaveChangesAsync();
-
-            return RedirectToAction("Accounts"); // danh sách user
-        }
 
         [HttpGet]
         public IActionResult Add()

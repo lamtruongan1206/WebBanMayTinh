@@ -1,6 +1,8 @@
 ﻿@{
     Layout = null;
 }
+@using WebBanMayTinh.Models.Views
+@model UserLoginVM
 
 <!DOCTYPE html>
 
@@ -75,35 +77,41 @@
                         <!-- /Logo -->
                         <h4 class="mb-2">Chào mừng tới ComputerShop</h4>
                         <p class="mb-4">Vui lòng đăng nhập tài khoản của bạn để bắt đầu khám phá</p>
-
-                        @if (ViewBag.LoginError != null)
+                        
+                        @if (TempData["success"] != null)
                         {
-                            <div class="alert alert-danger">@ViewBag.LoginError</div>
+                            <div class="alert alert-success">@TempData["success"]</div>
+                        }
+                        @if (TempData["error"] != null) 
+                        {
+                            <div class="alert alert-danger">@TempData["error"]</div>
                         }
 
-                        <form id="formAuthentication" class="mb-3" asp-controller="Login" asp-action="LoginAction" method="POST">
+                        <form id="formAuthentication" class="mb-3" asp-controller="Account" asp-action="Login" method="POST">
                             @Html.AntiForgeryToken()
                             <div class="mb-3">
-                                <label for="email" class="form-label">Tài khoản</label>
+
+
+                                <label asp-for="Username" class="form-label">Tài khoản</label>
                                 <input type="text"
                                        class="form-control"
-                                       id="email"
-                                       name="email"
+                                       asp-for="Username"
                                        placeholder="Nhập tài khoản hoặc email của bạn"
                                        autofocus />
                             </div>
+
                             <div class="mb-3 form-password-toggle">
                                 <div class="d-flex justify-content-between">
-                                    <label class="form-label" for="password">Mật khẩu</label>
+                                    <label asp-for="Password" class="form-label">
+                                        Mật khẩu</label>
                                     <a  href="auth-forgot-password-basic.html">
                                         <small>Quên mật khẩu?</small>
                                     </a>
                                 </div>
                                 <div class="input-group input-group-merge">
                                     <input type="password"
-                                           id="password"
                                            class="form-control"
-                                           name="password"
+                                           asp-for="Password"
                                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                            aria-describedby="password" />
                                     <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
@@ -116,13 +124,13 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100" type="submit">Đăng nhập</button>
+                                <button class="btn btn-primary d-grid w-100" >Đăng nhập</button>
                             </div>
                         </form>
 
                         <p class="text-center">
                             <span>Nếu bạn là khách hàng mới?</span>
-                            <a asp-controller="Register" asp-action="Index">
+                            <a asp-controller="Account" asp-action="Create">
                                 <span>Tạo tài khoản ngay</span>
                             </a>
                         </p>

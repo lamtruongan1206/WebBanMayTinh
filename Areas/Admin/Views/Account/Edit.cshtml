@@ -1,4 +1,4 @@
-﻿@model WebBanMayTinh.Models.User
+﻿@model UserEditVM
 
 @{
     ViewData["Title"] = "Cập nhật tài khoản";
@@ -13,15 +13,13 @@
             <form asp-action="Edit">
 
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="Password" />
 
                 <!-- Username -->
                 <div class="mb-3">
                     <label asp-for="Username" class="form-label"></label>
                     <div class="input-group input-group-merge">
                         <span class="input-group-text"><i class="bx bx-user"></i></span>
-                        <input asp-for="Username" class="form-control" disabled/>
+                        <input asp-for="Username" class="form-control"  />
                     </div>
                     <span asp-validation-for="Username" class="text-danger"></span>
                 </div>
@@ -51,7 +49,7 @@
                     <label asp-for="Email" class="form-label"></label>
                     <div class="input-group input-group-merge">
                         <span class="input-group-text"><i class="bx bx-envelope"></i></span>
-                        <input asp-for="Email" class="form-control" disabled />
+                        <input asp-for="Email" class="form-control"  />
                     </div>
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
@@ -76,26 +74,14 @@
                     <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
 
-                <!-- Role -->
+                @* <!-- Role -->
                 <div class="mb-3">
                     <label asp-for="RoleId" class="form-label"></label>
-                    <select asp-for="RoleId" asp-items="ViewBag.RoleId" class="form-select"></select>
+                    <select asp-for="RoleId" asp-items="ViewBag.Roles" class="form-select">
+                        <option value="">---  Lựa chọn vai trò  ---</option>
+                    </select>
                     <span asp-validation-for="RoleId" class="text-danger"></span>
-                </div>
-
-                <!-- CreatedAt -->
-                <div class="mb-3">
-                    <label asp-for="CreatedAt" class="form-label"></label>
-                    <input asp-for="CreatedAt" class="form-control" readonly />
-                    <span asp-validation-for="CreatedAt" class="text-danger"></span>
-                </div>
-
-                <!-- UpdateAt -->
-                <div class="mb-3">
-                    <label asp-for="UpdateAt" class="form-label"></label>
-                    <input asp-for="UpdateAt" class="form-control" readonly />
-                    <span asp-validation-for="UpdateAt" class="text-danger"></span>
-                </div>
+                </div> *@
 
                 <div class="d-flex flex-row-reverse">
                     <button type="submit" class="btn btn-primary">Cập nhật</button>

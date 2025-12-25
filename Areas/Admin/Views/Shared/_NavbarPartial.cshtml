@@ -52,7 +52,7 @@
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Người dùng</span>
         </li>
-        <li class="menu-item @(currentController == "Account" ? "open active" : "")">
+        <li class="menu-item @(currentController == "Account" || currentController == "Role" ? "open active" : "")">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-dock-top"></i>
                 <div data-i18n="Account Settings">Quản lý tài khoản</div>
@@ -66,6 +66,11 @@
                 <li class="menu-item @(currentController == "Account" && currentAction == "Create" ? "active" : "")">
                     <a asp-controller="Account" asp-action="Create" class="menu-link">
                         <div data-i18n="Notifications">Tạo mới tài khoản</div>
+                    </a>
+                </li>
+                <li class="menu-item @(currentController == "Role" && currentAction == "Index" ? "active" : "")">
+                    <a asp-controller="Role" asp-action="Index" class="menu-link">
+                        <div data-i18n="Notifications">Vai trò</div>
                     </a>
                 </li>
             </ul>

@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+    Layout = null;
+}
+@using WebBanMayTinh.Models.Views
+@model UserRegisterVM
+
+<!doctype html>
+<html lang="en" class="layout-wide customizer-hide" data-assets-path="../assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký tài khoản - SellComputer</title>
+    <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="../assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="../assets/css/demo.css" />
+    <link rel="stylesheet" href="../assets/vendor/css/pages/page-auth.css" />
+</head>
+
+<body>
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner">
+                <!-- Register Card -->
+                <div class="card px-sm-6 px-0">
+                    <div class="card-body">
+                        <!-- Logo -->
+                        <div class="app-brand justify-content-center mb-6">
+                            <a href="/" class="app-brand-link gap-2">
+                                <span class="app-brand-text demo text-heading fw-bold">ComputerShop</span>
+                            </a>
+                        </div>
+
+                        <h4 class="mb-1">Tạo tài khoản mới</h4>
+                        <p class="mb-6">Điền thông tin bên dưới để đăng ký.</p>
+
+                        @if (TempData["error"] != null)
+                        {
+                            <div class="alert alert-danger">@TempData["error"]</div>
+                        }
+
+                        <form class="mb-6" asp-action="Create" asp-controller="Account" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            @Html.AntiForgeryToken()    
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label asp-for="FirstName" class="form-label"></label>
+                                        <input type="text" class="form-control" asp-for="FirstName" placeholder="Họ"  />
+                                        <span asp-validation-for="FirstName" class="text-danger "></span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label asp-for="LastName" class="form-label"></label>
+                                        <input type="text" class="form-control" asp-for="LastName" placeholder="Tên"  />
+                                        <span asp-validation-for="LastName" class="text-danger "></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Username" class="form-label"></label>
+                                <input type="text" class="form-control" asp-for="Username" placeholder="Nhập tên tài khoản"  />
+                                <span asp-validation-for="Username" class="text-danger "></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">Email*</label>
+                                <input type="email" class="form-control" asp-for="Email" placeholder="Nhập email"  />
+                                <span asp-validation-for="Email" class="text-danger "></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input type="password" class="form-control" asp-for="Password" placeholder="Tối thiểu 8 ký tự" />
+                                <span asp-validation-for="Password" class="text-danger "></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input type="password" class="form-control" asp-for="ConfirmPassword" placeholder="Nhập lại mật khẩu"  />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger "></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Phone" class="form-label">Số điện thoại</label>
+                                <input type="text" class="form-control" asp-for="Phone" placeholder="Nhập số điện thoại" pattern="^[0-9]{10}$" />
+                                <span asp-validation-for="Phone" class="text-danger "></span>
+                            </div>
+                            <button class="btn btn-primary d-grid w-100">Đăng ký</button>
+                        </form>
+
+                        <p class="text-center">
+                            <span>Đã có tài khoản?</span>
+                            <a asp-controller="Account" asp-action="Login">Đăng nhập ngay</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

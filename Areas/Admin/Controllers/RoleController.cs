@@ -1,0 +1,125 @@
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using WebBanMayTinh.Models;
+
+namespace WebBanMayTinh.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    public class RoleController : Controller
+    {
+        private ShopBanMayTinhContext context;
+        private RoleManager<IdentityRole> roleManager;
+        public RoleController(ShopBanMayTinhContext context, RoleManager<IdentityRole> roleManager)
+        {
+            this.context = context;
+            this.roleManager = roleManager;
+        }
+        // GET: RoleController
+        public ActionResult Index()
+        {
+            var roles = context.Roles.ToList();
+            return View(roles);
+        }
+
+        // GET: RoleController/Details/5
+        public ActionResult Details(int id)
+        {
+            return View();
+        }
+
+        // GET: RoleController/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: RoleController/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Create(IdentityRole role)
+        {
+            try
+            {
+
+                var result = await roleManager.CreateAsync(role);
+
+                if (!result.Succeeded)
+                {
+                    return View(role);
+                }
+                return RedirectToAction(nameof(Index));
+
+            }
+            catch
+            {
+                return View(role);
+            }
+        }
+
+        // GET: RoleController/Edit/5
+        public async Task<ActionResult> Edit(string id)
+        {
+            var role = await roleManager.FindByIdAsync(id);
+            return View(role);
+        }
+
+        // POST: RoleController/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, IdentityRole value)
+        {
+            var role = await roleManager.FindByIdAsync(id);
+            if (role == null) return NotFound();
+
+            role.Name = value.Name;
+            role.NormalizedName = value.Name.ToUpper(); // BẮT BUỘC
+
+            var result = await roleManager.UpdateAsync(role);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                return View(role);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: RoleController/Delete/5
+        public async Task<ActionResult> Delete(string id)
+        {
+            var role = await roleManager.FindByIdAsync(id);
+            if (role == null)
+            {
+                return NotFound();
+            }
+            return View(role);
+        }
+
+        // POST: RoleController/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Delete(string id, IFormCollection collection)
+        {
+            var role = await roleManager.FindByIdAsync(id);
+            if (role == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                await roleManager.DeleteAsync(role);
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+    }
+}
