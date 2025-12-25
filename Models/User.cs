@@ -43,5 +43,6 @@ public partial class User
 
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
+    [Display(Name = "Vai Trò")]
     public virtual Role? Role { get; set; }
 }

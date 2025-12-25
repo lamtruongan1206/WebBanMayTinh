@@ -4,120 +4,153 @@
 @{
     ViewData["Title"] = "Tạo mới tài khoản";
 }
+@using WebBanMayTinh.Areas.Admin.Models.Views
+@model UserCreateVM
+
 <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Quản lý tài khoản /</span> Tạo tài khoản</h4>
 
 <div class="col-xl">
     <div class="card mb-4">
         <div class="card-body">
-            <form asp-action="Create">
+            <form asp-action="Create" asp-controller="Account" asp-area="Admin">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
                 <div class="mb-3">
-                    <label class="form-label" for="basic-icon-default-fullname">Tên tài khoản</label>
+                    <label asp-for="Username" class="form-label"></label>
                     <div class="input-group input-group-merge">
+
                         <span id="basic-icon-default-fullname2" class="input-group-text">
                             <i class="bx bx-user"></i>
                         </span>
+
                         <input type="text"
-                               name="Username"
+                               asp-for="Username"
                                class="form-control"
-                               id="basic-icon-default-fullname"
-                               placeholder="nguyenvana"
-                               aria-label="nguyenvana"
-                               aria-describedby="basic-icon-default-fullname2" />
+                               placeholder="nguyenvana" />
                     </div>
+                    <span asp-validation-for="Username" class="text-danger "></span>
                 </div>
+                
                 <div class="mb-3">
-                    <label class="form-label" for="first_name">Họ</label>
+                    <label asp-for="FirstName" class="form-label"></label>
+
                     <div class="input-group input-group-merge">
+
                         <span id="basic-icon-default-fullname2" class="input-group-text">
                             <i class='bx  bx-receipt'></i>
                         </span>
+
                         <input type="text"
-                               name="FirstName"
+                               asp-for="FirstName"
                                class="form-control"
-                               id="first_name"
-                               placeholder="Nguyễn"
-                               aria-label="nguyenvana"
-                               aria-describedby="basic-icon-default-fullname2" />
+                               placeholder="Nguyễn" />
+
+
                     </div>
+                    <span asp-validation-for="FirstName" class="text-danger "></span>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="last_name">Tên</label>
+                    <label class="form-label" asp-for="LastName"></label>
                     <div class="input-group input-group-merge">
+
                         <span id="basic-icon-default-fullname2" class="input-group-text">
                             <i class='bx  bx-receipt'></i>
                         </span>
+
                         <input type="text"
-                               name="LastName"
+                               asp-for="LastName"
                                class="form-control"
-                               id="last_name"
-                               placeholder="A"
-                               aria-label="nguyenvana"
-                               aria-describedby="basic-icon-default-fullname2" />
+                               placeholder="A" />
+
                     </div>
+                    <span asp-validation-for="LastName" class="text-danger "></span>
                 </div>
+
                 <div class="mb-3">
-                    <label class="form-label" for="basic-icon-default-email">Email</label>
+                    <label class="form-label" asp-for="Email"></label>
                     <div class="input-group input-group-merge">
                         <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+
                         <input type="text"
-                               name="Email"
-                               id="basic-icon-default-email"
+                               asp-for="Email"
                                class="form-control"
-                               placeholder="a.nguyen.van"
-                               aria-label="a.nguyen.van"
-                               aria-describedby="basic-icon-default-email2" />
+                               placeholder="a.nguyen.van" />
                         <span id="basic-icon-default-email2" class="input-group-text">example.com</span>
+
+
                     </div>
+                    <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="basic-icon-default-password">Mật khẩu</label>
+                    <label class="form-label" asp-for="Password"></label>
                     <div class="input-group input-group-merge">
                         <span class="input-group-text"><i class="bx bx-key"></i></span>
                         <input type="text"
-                               name="Email"
-                               id="basic-icon-default-password"
-                               class="form-control"
-                               />
+                               asp-for="Password"
+                               class="form-control" />
                     </div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
+
                 <div class="mb-3">
-                    <label class="form-label" for="basic-icon-default-phone">Số điện thoại</label>
+                    <label class="form-label" asp-for="ConfirmPassword"></label>
                     <div class="input-group input-group-merge">
+                        <span class="input-group-text"><i class="bx bx-key"></i></span>
+                        <input type="text"
+                               asp-for="ConfirmPassword"
+                               class="form-control" />
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" asp-for="Phone"></label>
+                    <div class="input-group input-group-merge">
+
                         <span id="basic-icon-default-phone2" class="input-group-text">
                             <i class="bx bx-phone"></i>
                         </span>
+
                         <input type="text"
-                               name="Phone"
-                               id="basic-icon-default-phone"
+                               asp-for="Phone"
                                class="form-control phone-mask"
-                               placeholder="658 799 8941"
-                               aria-label="658 799 8941"
-                               aria-describedby="basic-icon-default-phone2" />
+                               placeholder="658 799 8941" />
+
+
                     </div>
+                    <span asp-validation-for="Phone" class="text-danger"></span>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="basic-icon-default-message">Địa chỉ</label>
+                    <label class="form-label" asp-for="Address"></label>
                     <div class="input-group input-group-merge">
+
                         <span id="basic-icon-default-message2" class="input-group-text">
                             <i class='bx  bx-location-plus'></i>
                         </span>
-                        <input id="basic-icon-default-message"
-                               name="Address"
-                               class="form-control"
-                               placeholder="Hai Bà Trưng - Hà Nội"
-                               aria-label="Hai Bà Trưng - Hà Nội"
-                               aria-describedby="basic-icon-default-message2" />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label" for="basic-icon-default-role">Vai trò</label>
-                    <div class="input-group input-group-merge">
-                        <span class="input-group-text"><i class="bx bx-user-voice"></i></span>
-                        <select name="RoleId" class="form-select " asp-items="ViewBag.RoleId">
 
+                        <input 
+                               asp-for="Address"
+                               class="form-control"
+                               placeholder="Hai Bà Trưng - Hà Nội" />
+                    </div>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" asp-for="RoleId"></label>
+                    <div class="input-group input-group-merge">
+
+                        <span class="input-group-text"><i class="bx bx-user-voice"></i></span>
+
+                        <select asp-for="RoleId" class="form-select " asp-items="ViewBag.RoleId">
+                            <option value="">-- Lựa chọn vai trò --</option>
                         </select>
                     </div>
+
+                    <span asp-validation-for="RoleId" class="text-danger"></span>
                 </div>
+
                 <div class="d-flex flex-row-reverse">
                     <button type="submit" class="btn btn-primary">Tạo mới</button>
                 </div>

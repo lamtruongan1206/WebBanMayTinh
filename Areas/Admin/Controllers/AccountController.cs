@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using WebBanMayTinh.Areas.Admin.Models.Views;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Services;
 
@@ -54,23 +55,35 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(User user)
+        public async Task<IActionResult> Create(UserCreateVM userVM)
         {
+            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name");
             if (ModelState.IsValid)
             {
+                var user = new User()
+                {
+                    Username = userVM.Username,
+                    Email = userVM.Email,
+                    Password = userVM.Password,
+                    Phone = userVM.Phone,
+                    FirstName = userVM.FirstName,
+                    LastName = userVM.LastName,
+                    Address = userVM.Address,
+                    RoleId = userVM.RoleId,
+                };
+
                 var ok = userService.AddUser(user);
                 if (!ok)
                 {
-                    TempData["Error"] = "Tạo mới người dùng không thành công";
-                    return BadRequest();
+                    return View(userVM);
                 }
+
                 TempData["Success"] = "Tạo mới người dùng thành công";
                 return RedirectToAction(nameof(Index));
             }
             else
             {
-                ViewBag["Error"] = "Thông tin không hợp lệ";
-                return BadRequest();
+                return View(userVM);
             }
         }
 
