@@ -11,7 +11,7 @@ using WebBanMayTinh.Models;
 
 namespace WebBanMayTinh.Migrations
 {
-    [DbContext(typeof(ShopBanMayTinhContext))]
+    [DbContext(typeof(DataContext))]
     [Migration("20251225045452_FixAllowNull")]
     partial class FixAllowNull
     {

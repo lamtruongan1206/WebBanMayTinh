@@ -1,0 +1,190 @@
+﻿@model IEnumerable<Product>
+
+@{
+    ViewData["Title"] = "Danh sách máy tính";
+}
+<!-- Start Hero Section -->
+<div class="hero">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-lg-5">
+                <div class="">
+                    <h1>
+                        <span class="d-block">Sản phẩm nổi bật</span>
+                    </h1>
+                    <p class="mb-4">
+                        Khám phá các sản phẩm máy tính chất lượng cao, từ laptop, PC đến linh kiện, tất cả đều có sẵn với giá tốt nhất.
+                    </p>
+                    <p>
+                        <a href="@Url.Action("Index", "Shop")" class="btn btn-secondary me-2">Mua ngay</a>
+                        <a href="@Url.Action("Index", "Shop")" class="btn btn-white-outline">Khám phá thêm</a>
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="hero-img-wrap ms-5">
+                    <img src="~/furni-1.0.0/images/shop-img.png" class="img-fluid" alt="Sản phẩm nổi bật" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Hero Section -->
+
+
+<div class="container mt-4">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+
+    <!-- Form tìm kiếm -->
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-md-3">
+            <input type="text" name="searchName" value="@ViewBag.SearchName" class="form-control" placeholder="Tên máy" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="searchManufacturer" value="@ViewBag.SearchManufacturer" class="form-control" placeholder="Hãng sản xuất" />
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="priceFrom" value="@ViewBag.PriceFrom" class="form-control" placeholder="Giá từ" min="0" />
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="priceTo" value="@ViewBag.PriceTo" class="form-control" placeholder="Giá đến" min="0" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Tìm kiếm</button>
+        </div>
+    </form>
+
+    <!-- Danh sách sản phẩm -->
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            var mainImage = item.Images?.FirstOrDefault(i => i.IsMain)?.Url
+            ?? item.Images?.FirstOrDefault()?.Url
+            ?? "~/images/default.png";
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 d-flex flex-row align-items-stretch">
+
+                    <!-- Khung ảnh -->
+                    <div class="card-img-left d-flex align-items-center justify-content-center bg-light"
+                         style="width: 220px; height: 220px; overflow: hidden; border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
+                        <img src="@Url.Content(mainImage)" alt="@item.Name"
+                             class="img-fluid"
+                             style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                    </div>
+
+                    <!-- Thông tin sản phẩm -->
+                    <div class="card-body d-flex flex-column justify-content-between" style="flex: 1;">
+                        <div>
+                            <h5 class="card-title text-primary fw-bold">@item.Name</h5>
+                            <p class="card-text mb-2"><strong>Hãng:</strong> @item.Manufacturer</p>
+                            <p class="card-text mb-2"><strong>Giá:</strong> @String.Format("{0:N0} ₫", item.Price)</p>
+                            <p class="card-text mb-2"><strong>Số lượng:</strong> @item.Quantity</p>
+                            <p class="card-text mb-2"><strong>Danh mục:</strong> @item.Category?.Name</p>
+                        </div>
+
+                        <div class="btn-group mt-2" role="group">
+
+                            <a asp-action="Detail" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Chi tiết</a>
+
+                            <!-- NÚT THÊM VÀO GIỎ HÀNG -->
+                            <a asp-controller="Cart"
+                               asp-action="Add"
+                               asp-route-productId="@item.Id"
+                               class="btn btn-sm btn-success">
+                                Thêm vào giỏ hàng
+                            </a>
+
+
+                            <!-- NÚT MUA NGAY -->
+                            <a asp-controller="Checkout"
+                               asp-action="BuyNow"
+                               asp-route-productId="@item.Id"
+                               class="btn btn-sm btn-danger">
+                                Mua Ngay
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Phân trang -->
+    <div class="mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                @if ((int)ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                           asp-route-searchName="@ViewBag.SearchName"
+                           asp-route-searchManufacturer="@ViewBag.SearchManufacturer"
+                           asp-route-priceFrom="@ViewBag.PriceFrom"
+                           asp-route-priceTo="@ViewBag.PriceTo">
+                            Previous
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                }
+
+                @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+                {
+                    if (i == (int)ViewBag.CurrentPage)
+                    {
+                        <li class="page-item active"><span class="page-link">@i</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i"
+                               asp-route-searchName="@ViewBag.SearchName"
+                               asp-route-searchManufacturer="@ViewBag.SearchManufacturer"
+                               asp-route-priceFrom="@ViewBag.PriceFrom"
+                               asp-route-priceTo="@ViewBag.PriceTo">
+                                @i
+                            </a>
+                        </li>
+                    }
+                }
+
+                @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                           asp-route-searchName="@ViewBag.SearchName"
+                           asp-route-searchManufacturer="@ViewBag.SearchManufacturer"
+                           asp-route-priceFrom="@ViewBag.PriceFrom"
+                           asp-route-priceTo="@ViewBag.PriceTo">
+                            Next
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                }
+            </ul>
+        </nav>
+    </div>
+
+
+
+</div>

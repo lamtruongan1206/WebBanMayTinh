@@ -9,9 +9,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
     [Area("Admin")]
     public class RoleController : Controller
     {
-        private ShopBanMayTinhContext context;
+        private DataContext context;
         private RoleManager<IdentityRole> roleManager;
-        public RoleController(ShopBanMayTinhContext context, RoleManager<IdentityRole> roleManager)
+        public RoleController(DataContext context, RoleManager<IdentityRole> roleManager)
         {
             this.context = context;
             this.roleManager = roleManager;

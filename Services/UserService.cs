@@ -6,7 +6,7 @@ namespace WebBanMayTinh.Services
 {
     public class UserService : IUserService
     {
-        private readonly ShopBanMayTinhContext context;
+        private readonly DataContext context;
         private readonly ILogger<UserService> logger;
 
 
@@ -14,7 +14,7 @@ namespace WebBanMayTinh.Services
         private SignInManager<AppUser> signInManager;
 
 
-        public UserService(ShopBanMayTinhContext context, ILogger<UserService> logger,
+        public UserService(DataContext context, ILogger<UserService> logger,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager) 
         {
@@ -88,7 +88,7 @@ namespace WebBanMayTinh.Services
             throw new NotImplementedException();
         }
 
-        User IUserService.GetUser(string id)
+        AppUser IUserService.GetUser(string id)
         {
             //var user = context.Users.FirstOrDefault(x => x.Id==id);
             //return user;

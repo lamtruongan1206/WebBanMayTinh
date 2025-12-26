@@ -15,5 +15,5 @@ public partial class Image
 
     public Guid? ProductId { get; set; }
 
-    public virtual Computer? Product { get; set; }
+    public virtual Product? Product { get; set; }
 }

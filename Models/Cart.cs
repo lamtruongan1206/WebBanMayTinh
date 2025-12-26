@@ -13,9 +13,9 @@ public partial class Cart
 
     public Guid? ProductId { get; set; }
 
-    public Guid? UserId { get; set; }
+    public string? UserId { get; set; }
 
-    public virtual Computer? Product { get; set; }
+    public virtual Product? Product { get; set; }
 
-    public virtual User? User { get; set; }
+    public virtual AppUser? User { get; set; }
 }

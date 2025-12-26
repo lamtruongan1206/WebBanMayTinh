@@ -1,0 +1,175 @@
+﻿@model List<WebBanMayTinh.Models.DTO.CartVM>
+@{
+}
+
+<style>
+    .cart-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .checkbox-cell {
+        width: 45px;
+        text-align: center;
+    }
+
+    .qty {
+        width: 55px !important;
+        display: inline-block;
+    }
+</style>
+
+<form method="post" asp-action="Index" asp-controller="Checkout">
+    <div class="container my-4" style="min-height: 70vh">
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" id="checkAll" class="cart-checkbox" />
+                    </th>
+                    <th>Ảnh</th>
+                    <th>Sản phẩm</th>
+                    <th>Giá</th>
+                    <th>Số lượng</th>
+                    <th>Tổng</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody id="cartBody">
+                @for (int i = 0; i < Model.Count(); i++)
+                {
+                    <tr data-id="@Model[i].CartId">
+
+                        <td class="checkbox-cell">
+                            <input asp-for="@Model[i].Checked" type="checkbox" class="chkItem cart-checkbox" />
+                            <input asp-for="@Model[i].ProductId" type="hidden" class="chkItem cart-checkbox" />
+                        </td>
+
+                        <td>
+                            <img src="@Model[i].Image" width="90" class="rounded border" />
+                        </td>
+
+                        <td>@Model[i].Name</td>
+
+                        <td class="price" data-price="@Model[i].Price">
+                            @String.Format("{0:N0} ₫", @Model[i].Price)
+                        </td>
+
+                        <td width="230">
+                            <button class="btn btn-sm btn-primary btnMinus">−</button>
+
+                            <input type="text"
+                                   class="qty form-control text-center"
+                                   value="@Model[i].Quantity" />
+
+                            <button class="btn btn-sm btn-primary btnPlus">+</button>
+                        </td>
+
+                        <td class="subTotal fw-bold text-danger">
+                            @String.Format("{0:N0} ₫", Model[i].Price * Model[i].Quantity)
+                            <input type="hidden" asp-for="@Model[i].Quantity"/>
+                        </td>
+
+                        <td>
+                            <a asp-action="Remove" asp-route-cartId="@Model[i].CartId"
+                               class="btn btn-danger btn-sm">Xóa</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+    <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
+        <a href="/User/Index" class="btn btn-secondary">
+            ⬅ Quay lại
+        </a>
+
+        <h4 class="m-0">
+            Tổng tiền:
+            <span id="totalPrice" class="text-danger fw-bold">0 ₫</span>
+        </h4>
+
+        <button type="submit" class="btn btn-primary">Mua hàng</button>
+    </div>
+</form>
+
+
+@section Scripts {
+    <script>
+
+        function formatMoney(num) {
+            return num.toLocaleString("vi-VN") + " ₫";
+        }
+
+        function updateRowTotal(row) {
+            let price = parseInt(row.querySelector(".price").dataset.price);
+            let qty = parseInt(row.querySelector(".qty").value);
+            row.querySelector(".subTotal").innerText = formatMoney(price * qty);
+        }
+
+        function updateTotal() {
+            let total = 0;
+
+            document.querySelectorAll(".chkItem:checked").forEach(chk => {
+                let row = chk.closest("tr");
+                let price = parseInt(row.querySelector(".price").dataset.price);
+                let qty = parseInt(row.querySelector(".qty").value);
+                total += price * qty;
+            });
+
+            document.getElementById("totalPrice").innerText = formatMoney(total);
+        }
+
+        // Chọn tất cả
+        document.getElementById("checkAll").addEventListener("change", function () {
+            document.querySelectorAll(".chkItem").forEach(c => c.checked = this.checked);
+            updateTotal();
+        });
+
+        // Chọn từng cái
+        document.querySelectorAll(".chkItem").forEach(chk => {
+            chk.addEventListener("change", updateTotal);
+        });
+
+        // Nút giảm
+        document.querySelectorAll(".btnMinus").forEach(btn => {
+            btn.addEventListener("click", function () {
+                let row = this.closest("tr");
+                let qtyBox = row.querySelector(".qty");
+
+                let qty = Math.max(1, parseInt(qtyBox.value) - 1);
+                qtyBox.value = qty;
+
+                updateRowTotal(row);
+                updateTotal();
+            });
+        });
+
+        // Nút tăng
+        document.querySelectorAll(".btnPlus").forEach(btn => {
+            btn.addEventListener("click", function () {
+                let row = this.closest("tr");
+                let qtyBox = row.querySelector(".qty");
+
+                qtyBox.value = parseInt(qtyBox.value) + 1;
+
+                updateRowTotal(row);
+                updateTotal();
+            });
+        });
+
+        // Nhập thủ công
+        document.querySelectorAll(".qty").forEach(q => {
+            q.addEventListener("input", function () {
+                if (this.value < 1 || isNaN(this.value)) this.value = 1;
+                updateRowTotal(this.closest("tr"));
+                updateTotal();
+            });
+        });
+
+    </script>
+}

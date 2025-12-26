@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Thêm máy tính";
+}
+@model ProductCreateVM
+<h2 class="text-primary fw-bold mb-3">Thêm máy tính mới</h2>
+
+<form asp-action="Add" asp-controller="Product" asp-area="Admin" method="post" enctype="multipart/form-data" class="card p-4 shadow-sm">
+
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Tên máy</label>
+        <input type="text" name="Name" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Hãng sản xuất</label>
+        <select asp-for="BrandId" asp-items="ViewBag.Brands" class="form-select"></select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Giá</label>
+        <input type="number" name="Price" class="form-control" min="0" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Số lượng</label>
+        <input type="number" name="Quantity" class="form-control" min="0" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Danh mục</label>
+        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select"></select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Mô tả</label>
+        <textarea name="Description" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Ảnh chính</label>
+        <input type="file" name="MainImage" class="form-control" accept="image/*" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Ảnh phụ (nhiều ảnh)</label>
+        <input type="file" name="AdditionalImages" class="form-control" accept="image/*" multiple />
+    </div>
+
+    <button class="btn btn-primary">Thêm mới</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>

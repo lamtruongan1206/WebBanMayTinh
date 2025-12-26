@@ -11,9 +11,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
     //[Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
-        ShopBanMayTinhContext conn;
+        DataContext conn;
 
-        public HomeController(ShopBanMayTinhContext conn)
+        public HomeController(DataContext conn)
         {
             this.conn = conn;
         }
@@ -21,8 +21,8 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
         {
             // Lấy dữ liệu cơ bản
-            var query = conn.Computers
-                .Include(c => c.Categories)
+            var query = conn.Products
+                .Include(c => c.Category)
                 .Include(c => c.Images)
                 .AsQueryable();
 
@@ -70,8 +70,8 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         public IActionResult Shop(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
         {
             // Lấy dữ liệu cơ bản
-            var query = conn.Computers
-                .Include(c => c.Categories)
+            var query = conn.Products
+                .Include(c => c.Category)
                 .Include(c => c.Images)
                 .AsQueryable();
 
@@ -152,7 +152,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             }
 
             // Tạo entity Computer
-            var computer = new Computer
+            var computer = new Product
             {
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
@@ -160,12 +160,12 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                 Price = dto.Price,
                 Quantity = dto.Quantity,
                 Description = dto.Description,
-                CategoriesId = dto.CategoriesId,
+                CategoryId = dto.CategoriesId,
                 CreateAt = DateOnly.FromDateTime(DateTime.Now),
                 UpdateAt = DateOnly.FromDateTime(DateTime.Now)
             };
 
-            conn.Computers.Add(computer);
+            conn.Products.Add(computer);
 
             // Upload ảnh
             string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -219,13 +219,13 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Update(Guid id)
         {
-            var computer = conn.Computers
+            var computer = conn.Products
                 .Include(c => c.Images)
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();
 
-            ViewBag.CategoriesId = new SelectList(conn.Categories, "Id", "Name", computer.CategoriesId);
+            ViewBag.CategoriesId = new SelectList(conn.Categories, "Id", "Name", computer.CategoryId);
             ViewBag.ComputerId = computer.Id;
             ViewBag.MainImage = computer.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
             var dto = new ComputerDto
@@ -235,7 +235,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                 Price = computer.Price,
                 Quantity = computer.Quantity,
                 Description = computer.Description,
-                CategoriesId = computer.CategoriesId
+                CategoriesId = computer.CategoryId
             };
             return View(dto);
         }
@@ -243,7 +243,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult UpdateAction(Guid id, ComputerDto dto)
         {
-            var computer = conn.Computers
+            var computer = conn.Products
                 .Include(c => c.Images)
                 .FirstOrDefault(c => c.Id == id);
 
@@ -261,7 +261,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             computer.Price = dto.Price;
             computer.Quantity = dto.Quantity;
             computer.Description = dto.Description;
-            computer.CategoriesId = dto.CategoriesId;
+            computer.CategoryId = dto.CategoriesId;
             computer.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
 
             string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -323,7 +323,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Delete(Guid id)
         {
-            var computer = conn.Computers.FirstOrDefault(c => c.Id == id);
+            var computer = conn.Products.FirstOrDefault(c => c.Id == id);
             if (computer == null) return NotFound();
             return View(computer);
         }
@@ -331,7 +331,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult DeleteAction(Guid id)
         {
-            var computer = conn.Computers
+            var computer = conn.Products
                 .Include(c => c.Images)
                 .FirstOrDefault(c => c.Id == id);
 
@@ -346,7 +346,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             }
 
             conn.Images.RemoveRange(computer.Images);
-            conn.Computers.Remove(computer);
+            conn.Products.Remove(computer);
             conn.SaveChanges();
 
             return RedirectToAction("Index");
@@ -358,9 +358,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         public IActionResult Detail(Guid id)
         {
             // Lấy máy tính theo id, bao gồm các ảnh
-            var computer = conn.Computers
+            var computer = conn.Products
                 .Include(c => c.Images)
-                .Include(c => c.Categories) // Nếu muốn hiển thị tên danh mục
+                .Include(c => c.Category) // Nếu muốn hiển thị tên danh mục
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();

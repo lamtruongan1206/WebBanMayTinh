@@ -15,8 +15,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class AccountController : Controller
     {
-        private readonly ShopBanMayTinhContext _context;
-        private PasswordHasher<User> passwordHasher;
+        private readonly DataContext _context;
         private IUserService userService;
 
 
@@ -24,10 +23,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         private SignInManager<AppUser> signInManager;
         private RoleManager<IdentityRole> roleManager;
 
-        public AccountController(ShopBanMayTinhContext context, IUserService userService, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public AccountController(DataContext context, IUserService userService, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
-            passwordHasher = new PasswordHasher<User>();
             this.userService = userService;
             this.userManager = userManager;
             this.signInManager = signInManager;
@@ -199,7 +197,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user != null)
@@ -214,6 +212,56 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         private bool UserExists(string id)
         {
             return _context.Users.Any(e => e.Id == id);
+        }
+
+        public async Task<IActionResult> Permission(string id)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            var roles = _context.Roles;
+            var userRoles = await userManager.GetRolesAsync(user);
+
+            ViewBag.UserRoles = userRoles;
+            ViewBag.Roles = roles;
+            ViewBag.User = user;
+
+            var models = new List<PermissionVM>();
+
+            foreach (var role in roles)
+            {
+                PermissionVM permissionVM = new PermissionVM();
+                if (userRoles.Contains(role.Name ?? ""))
+                    permissionVM.Checked = true;
+                else 
+                    permissionVM.Checked = false;
+                permissionVM.Role = role;
+                models.Add(permissionVM);
+            }
+
+
+            return View(models);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Permission(string id, List<PermissionVM> model)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var userRoles = await userManager.GetRolesAsync(user);
+
+            foreach (var item in model)
+            {
+                if (item.Checked && !userRoles.Contains(item.Role.Name))
+                {
+                    await userManager.AddToRoleAsync(user, item.Role.Name);
+                }
+                else if (!item.Checked && userRoles.Contains(item.Role.Name))
+                {
+                    await userManager.RemoveFromRoleAsync(user, item.Role.Name);
+                }
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }

@@ -13,5 +13,5 @@ public partial class Category
 
     public DateOnly? CreateAt { get; set; }
 
-    public virtual ICollection<Computer> Computers { get; set; } = new List<Computer>();
+    public virtual ICollection<Product> Computers { get; set; } = new List<Product>();
 }

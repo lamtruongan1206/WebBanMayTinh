@@ -14,6 +14,6 @@ public partial class BillDetail
 
     public decimal? UnitPrice { get; set; }
 
-    public virtual Computer Product { get; set; } = null!;
+    public virtual Product Product { get; set; } = null!;
     public virtual Bill Bill { get; set; } = null!;
 }

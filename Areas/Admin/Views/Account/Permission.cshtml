@@ -1,0 +1,58 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Phân quyền";
+    AppUser user = ViewBag.User;
+}
+@model List<PermissionVM>
+
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Quản lý người dùng / Phân quyền /</span> @user.UserName</h4>
+<form asp-action="Permission" method="post">
+
+    <div class="card">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between">
+                <h5 class="card-header">Danh sách vai trò</h5>
+
+                <a asp-controller="Role" asp-action="Create">
+                    <button type="button" class="btn btn-icon btn-primary" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="Tạo mới vai trò">
+                        <span class="tf-icons bx bx-plus"></span>
+                    </button>
+                </a>
+            </div>
+            <div class="table-responsive text-nowrap">
+
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Tên</th>
+                            <th style="width:120px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            <tr>
+                                <td>@Model[i].Role.Name</td>
+                                <td>
+                                    <input asp-for="@Model[i].Checked" class="form-check-input" />
+                                    <input asp-for="@Model[i].Role.Name" type="hidden" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex flex-row-reverse gap-2 align-items-center">
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+                <div>
+                    <a asp-action="Index">Quay lại</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

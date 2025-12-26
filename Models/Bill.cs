@@ -7,7 +7,7 @@ public partial class Bill
 {
     public Guid Id { get; set; }
 
-    public Guid? UserId { get; set; }
+    public string? UserId { get; set; }
 
     public DateOnly? CreateAt { get; set; }
 
@@ -17,5 +17,5 @@ public partial class Bill
 
     public string? Status { get; set; }
 
-    public virtual User? User { get; set; }
+    public virtual AppUser? User { get; set; }
 }

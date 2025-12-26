@@ -21,12 +21,12 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddDbContext<ShopBanMayTinhContext>(options =>
+builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
-    .AddEntityFrameworkStores<ShopBanMayTinhContext>()
+    .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(options =>

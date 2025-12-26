@@ -8,7 +8,7 @@ namespace WebBanMayTinh.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    ShopBanMayTinhContext conn = new ShopBanMayTinhContext();
+    DataContext conn = new DataContext();
     public HomeController(ILogger<HomeController> logger)
     {
         _logger = logger;
@@ -16,8 +16,8 @@ public class HomeController : Controller
     public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
     {
         
-        var query = conn.Computers
-            .Include(c => c.Categories)
+        var query = conn.Products
+            .Include(c => c.Category)
             .Include(c => c.Images)
             .AsQueryable();
 
@@ -66,9 +66,9 @@ public class HomeController : Controller
     public IActionResult Detail(Guid id)
     {
         // Lấy máy tính theo id, bao gồm các ảnh
-        var computer = conn.Computers
+        var computer = conn.Products
             .Include(c => c.Images)
-            .Include(c => c.Categories) // Nếu muốn hiển thị tên danh mục
+            .Include(c => c.Category) // Nếu muốn hiển thị tên danh mục
             .FirstOrDefault(c => c.Id == id);
 
         if (computer == null) return NotFound();

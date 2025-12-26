@@ -1,21 +1,35 @@
 ﻿@using Microsoft.AspNetCore.Http
+@{
+    var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
+}
+
 <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark"
      arial-label="Furni navigation bar">
     <div class="container">
         <a class="navbar-brand" href="/">ComputerShop<span>.</span></a>
 
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarsFurni"
-                aria-controls="navbarsFurni"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
         <div class="collapse navbar-collapse" id="navbarsFurni">
             <partial name="_NavbarPartial"/>
+
+            @if (User.Identity.IsAuthenticated)
+            {
+
+                <a href="/Cart/Index"
+                   class="ms-4 position-relative d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 16 16">
+                        <path d="M0 1a1 1 0 0 1 1-1h1.5a1 1 0 0 1 .95.684L3.89 3H14a1 1 0 0 1 .98 1.196l-1.5 7A1 1 0 0 1 12.5 12H4a1 1 0 0 1-.98-.804L1.61 2H1a1 1 0 0 1-1-1z" />
+                        <circle cx="5.5" cy="13.5" r="1.5" />
+                        <circle cx="11.5" cy="13.5" r="1.5" />
+                    </svg>
+
+                    <!-- Số lượng -->
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @cartCount
+                    </span>
+                </a>
+            }
+
             @await Component.InvokeAsync("Avatar")
         </div>
     </div>

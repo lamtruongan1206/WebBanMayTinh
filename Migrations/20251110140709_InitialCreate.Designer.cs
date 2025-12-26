@@ -11,7 +11,7 @@ using WebBanMayTinh.Models;
 
 namespace WebBanMayTinh.Migrations
 {
-    [DbContext(typeof(ShopBanMayTinhContext))]
+    [DbContext(typeof(DataContext))]
     [Migration("20251110140709_InitialCreate")]
     partial class InitialCreate
     {

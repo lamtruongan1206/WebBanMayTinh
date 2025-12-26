@@ -14,11 +14,11 @@ namespace WebBanMayTinh.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ShopBanMayTinhContext context;
+        private readonly DataContext context;
         private ILogger<AccountController> logger;
         private IUserService userService;
         public AccountController(
-            ShopBanMayTinhContext context,
+            DataContext context,
             ILogger<AccountController> logger,
             IUserService userService)
         {

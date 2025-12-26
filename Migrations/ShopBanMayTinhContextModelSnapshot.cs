@@ -10,7 +10,7 @@ using WebBanMayTinh.Models;
 
 namespace WebBanMayTinh.Migrations
 {
-    [DbContext(typeof(ShopBanMayTinhContext))]
+    [DbContext(typeof(DataContext))]
     partial class ShopBanMayTinhContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -250,8 +250,8 @@ namespace WebBanMayTinh.Migrations
                     b.Property<decimal?>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -287,6 +287,28 @@ namespace WebBanMayTinh.Migrations
                     b.ToTable("BillDetails");
                 });
 
+            modelBuilder.Entity("WebBanMayTinh.Models.Brand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Brand");
+                });
+
             modelBuilder.Entity("WebBanMayTinh.Models.Cart", b =>
                 {
                     b.Property<Guid>("Id")
@@ -302,8 +324,8 @@ namespace WebBanMayTinh.Migrations
                     b.Property<int?>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -334,43 +356,6 @@ namespace WebBanMayTinh.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.Computer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("CategoriesId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly?>("CreateAt")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Manufacturer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly?>("UpdateAt")
-                        .HasColumnType("date");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoriesId");
-
-                    b.ToTable("Computers");
-                });
-
             modelBuilder.Entity("WebBanMayTinh.Models.Image", b =>
                 {
                     b.Property<Guid>("Id")
@@ -396,18 +381,46 @@ namespace WebBanMayTinh.Migrations
                     b.ToTable("Images");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.Role", b =>
+            modelBuilder.Entity("WebBanMayTinh.Models.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("BrandId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("CreateAt")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Manufacturer")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("UpdateAt")
+                        .HasColumnType("date");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.Specification", b =>
@@ -433,52 +446,6 @@ namespace WebBanMayTinh.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("Specifications");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Avatar")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateOnly?>("CreatedAt")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly?>("UpdateAt")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Username")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -534,8 +501,8 @@ namespace WebBanMayTinh.Migrations
 
             modelBuilder.Entity("WebBanMayTinh.Models.Bill", b =>
                 {
-                    b.HasOne("WebBanMayTinh.Models.User", "User")
-                        .WithMany("Bills")
+                    b.HasOne("WebBanMayTinh.Models.AppUser", "User")
+                        .WithMany()
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
@@ -549,7 +516,7 @@ namespace WebBanMayTinh.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebBanMayTinh.Models.Computer", "Product")
+                    b.HasOne("WebBanMayTinh.Models.Product", "Product")
                         .WithMany("BillDetails")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -562,12 +529,12 @@ namespace WebBanMayTinh.Migrations
 
             modelBuilder.Entity("WebBanMayTinh.Models.Cart", b =>
                 {
-                    b.HasOne("WebBanMayTinh.Models.Computer", "Product")
+                    b.HasOne("WebBanMayTinh.Models.Product", "Product")
                         .WithMany("Carts")
                         .HasForeignKey("ProductId");
 
-                    b.HasOne("WebBanMayTinh.Models.User", "User")
-                        .WithMany("Carts")
+                    b.HasOne("WebBanMayTinh.Models.AppUser", "User")
+                        .WithMany()
                         .HasForeignKey("UserId");
 
                     b.Navigation("Product");
@@ -575,40 +542,37 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.Computer", b =>
-                {
-                    b.HasOne("WebBanMayTinh.Models.Category", "Categories")
-                        .WithMany("Computers")
-                        .HasForeignKey("CategoriesId");
-
-                    b.Navigation("Categories");
-                });
-
             modelBuilder.Entity("WebBanMayTinh.Models.Image", b =>
                 {
-                    b.HasOne("WebBanMayTinh.Models.Computer", "Product")
+                    b.HasOne("WebBanMayTinh.Models.Product", "Product")
                         .WithMany("Images")
                         .HasForeignKey("ProductId");
 
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("WebBanMayTinh.Models.Product", b =>
+                {
+                    b.HasOne("WebBanMayTinh.Models.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId");
+
+                    b.HasOne("WebBanMayTinh.Models.Category", "Category")
+                        .WithMany("Computers")
+                        .HasForeignKey("CategoryId");
+
+                    b.Navigation("Brand");
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("WebBanMayTinh.Models.Specification", b =>
                 {
-                    b.HasOne("WebBanMayTinh.Models.Computer", "Product")
+                    b.HasOne("WebBanMayTinh.Models.Product", "Product")
                         .WithMany("Specifications")
                         .HasForeignKey("ProductId");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.User", b =>
-                {
-                    b.HasOne("WebBanMayTinh.Models.Role", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId");
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.Category", b =>
@@ -616,7 +580,7 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Computers");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.Computer", b =>
+            modelBuilder.Entity("WebBanMayTinh.Models.Product", b =>
                 {
                     b.Navigation("BillDetails");
 
@@ -625,18 +589,6 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Specifications");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.Role", b =>
-                {
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.User", b =>
-                {
-                    b.Navigation("Bills");
-
-                    b.Navigation("Carts");
                 });
 #pragma warning restore 612, 618
         }
