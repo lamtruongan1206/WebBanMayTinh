@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBanMayTinh.Models;
 
@@ -11,9 +12,11 @@ using WebBanMayTinh.Models;
 namespace WebBanMayTinh.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class ShopBanMayTinhContextModelSnapshot : ModelSnapshot
+    [Migration("20251226043107_Fix_Cart")]
+    partial class Fix_Cart
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,9 +172,6 @@ namespace WebBanMayTinh.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
 
@@ -188,6 +188,7 @@ namespace WebBanMayTinh.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Ward")
@@ -442,9 +443,6 @@ namespace WebBanMayTinh.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("ShippingFee")
                         .HasColumnType("decimal(18,2)");
 
@@ -529,9 +527,6 @@ namespace WebBanMayTinh.Migrations
 
                     b.Property<int?>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateOnly?>("UpdateAt")
                         .HasColumnType("date");
@@ -625,7 +620,9 @@ namespace WebBanMayTinh.Migrations
                 {
                     b.HasOne("WebBanMayTinh.Models.AppUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -710,7 +707,7 @@ namespace WebBanMayTinh.Migrations
                         .IsRequired();
 
                     b.HasOne("WebBanMayTinh.Models.Product", "Product")
-                        .WithMany("OrderItems")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -761,8 +758,6 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("Images");
-
-                    b.Navigation("OrderItems");
 
                     b.Navigation("Specifications");
                 });

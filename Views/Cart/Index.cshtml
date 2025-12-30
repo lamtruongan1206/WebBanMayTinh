@@ -20,7 +20,28 @@
     }
 </style>
 
+@if (TempData["Success"] != null && TempData["Error"] == null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null && TempData["Success"] == null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="min-vh-100 text-center" >
+        <h2 class="" style="padding-top: 300px">Không có sản phẩm nào trong giỏ hàng !</h2>
+        <a href="/product" class="mt-4 btn btn-primary">
+            Đến trang sản phẩm
+        </a>
+    </div>
+
+} else
+{
 <form method="post" asp-action="Index" asp-controller="Checkout">
+    
     <div class="container my-4" style="min-height: 70vh">
         <table class="table table-bordered align-middle">
             <thead class="table-dark">
@@ -42,9 +63,12 @@
                 {
                     <tr data-id="@Model[i].CartId">
 
+
                         <td class="checkbox-cell">
-                            <input asp-for="@Model[i].Checked" type="checkbox" class="chkItem cart-checkbox" />
-                            <input asp-for="@Model[i].ProductId" type="hidden" class="chkItem cart-checkbox" />
+                            <input type="checkbox"
+                                   class="cart-checkbox"
+                                   data-id="@Model[i].CartId"
+                                   @(Model[i].Checked ? "checked" : "") />
                         </td>
 
                         <td>
@@ -58,13 +82,14 @@
                         </td>
 
                         <td width="230">
-                            <button class="btn btn-sm btn-primary btnMinus">−</button>
+                                <button type="button" data-id="@Model[i].CartId" class="btn btn-sm btn-primary btnMinus">−</button>
 
                             <input type="text"
                                    class="qty form-control text-center"
-                                   value="@Model[i].Quantity" />
+                                       data-id="@Model[i].CartId"
+                                       value="@Model[i].Quantity" />
 
-                            <button class="btn btn-sm btn-primary btnPlus">+</button>
+                                <button type="button" data-id="@Model[i].CartId" class="btn btn-sm btn-primary btnPlus">+</button>
                         </td>
 
                         <td class="subTotal fw-bold text-danger">
@@ -93,9 +118,10 @@
             <span id="totalPrice" class="text-danger fw-bold">0 ₫</span>
         </h4>
 
-        <button type="submit" class="btn btn-primary">Mua hàng</button>
+        <a asp-action="Index" asp-controller="Checkout" class="btn btn-primary">Mua hàng</a>
     </div>
 </form>
+}
 
 
 @section Scripts {
@@ -135,6 +161,7 @@
             chk.addEventListener("change", updateTotal);
         });
 
+        
         // Nút giảm
         document.querySelectorAll(".btnMinus").forEach(btn => {
             btn.addEventListener("click", function () {
@@ -143,6 +170,19 @@
 
                 let qty = Math.max(1, parseInt(qtyBox.value) - 1);
                 qtyBox.value = qty;
+
+                fetch("/Cart/UpdateQuantity", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken":
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        cartId: this.dataset.id,
+                        quantity: qty
+                    })
+                })
 
                 updateRowTotal(row);
                 updateTotal();
@@ -157,6 +197,19 @@
 
                 qtyBox.value = parseInt(qtyBox.value) + 1;
 
+                fetch("/Cart/UpdateQuantity", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken":
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        cartId: this.dataset.id,
+                        quantity: qtyBox.value
+                    })
+                })
+
                 updateRowTotal(row);
                 updateTotal();
             });
@@ -168,6 +221,23 @@
                 if (this.value < 1 || isNaN(this.value)) this.value = 1;
                 updateRowTotal(this.closest("tr"));
                 updateTotal();
+            });
+        });
+
+                document.querySelectorAll(".cart-checkbox").forEach(cb => {
+            cb.addEventListener("change", function () {
+                fetch("/Cart/ToggleSelect", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken":
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        cartId: this.dataset.id,
+                        selected: this.checked
+                    })
+                });
             });
         });
 

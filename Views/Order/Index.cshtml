@@ -1,0 +1,52 @@
+﻿@model IEnumerable<WebBanMayTinh.Models.Views.OrderVM>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="mt-4 text-center">Đơn hàng</h2>
+
+<div class="container mx-auto my-4 min-vh-100">
+    @foreach (var order in Model)
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                @foreach (var item in order.Items)
+                {
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="/assets/img/Computer/@item.ProductThumbnailUrl" style="height: 100px; width: 100px; object-fit: cover"/>
+                            <div>
+                                <p>Tên sản phẩm: <b>@item.ProductName</b></p>
+                                <span>Số lượng: <b>@item.Quantity</b> </span>
+                            </div>
+                        </div>
+
+                        
+                        <div>
+                            <p>
+                                Trạng thái: <b class="@OrderStatusExtensions.ToTextColor(order.OrderStatus)">
+                                    @OrderStatusExtensions.ToVietNamText(order.OrderStatus)
+                                </b>
+                            </p>
+                            <p>Giá: <b> @item.Price</b></p>
+                        </div>
+                    </div>
+
+                    <hr />
+                    
+                }
+                <div class="text-end">
+                    <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                        Yêu cầu hủy đơn
+                    </a>
+                    <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                        Chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>

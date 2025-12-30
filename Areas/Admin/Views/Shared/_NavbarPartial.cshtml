@@ -43,7 +43,7 @@
 
         <li class="menu-item @(currentController == "Product" || currentController == "Brand" ? "open active" : "")">
             <a class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-dock-top"></i>
+                <i class="menu-icon tf-icons bx bxl-product-hunt"></i>
                 <div data-i18n="Account Settings">Quản lý sản phẩm</div>
             </a>
             <ul class="menu-sub">
@@ -63,7 +63,7 @@
 
         <li class="menu-item @(currentController == "Account" || currentController == "Role" ? "open active" : "")">
             <a class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-dock-top"></i>
+                <i class="menu-icon tf-icons bx bx-user"></i>
                 <div data-i18n="Account Settings">Quản lý người dùng</div>
             </a>
             <ul class="menu-sub">
@@ -79,6 +79,14 @@
                 </li>
             </ul>
         </li>
+
+        <li class="menu-item @(currentController == "OrderManage" ? "active" : "")">
+            <a asp-controller="OrderManage" asp-action="Index" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-shopping-bag"></i>
+                <div data-i18n="Analytics">Quản lý đơn hàng</div>
+            </a>
+        </li>
+
 
         <li class="menu-item ">
             <a href="/" class="menu-link">

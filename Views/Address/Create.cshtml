@@ -1,0 +1,139 @@
+﻿@model WebBanMayTinh.Models.Address
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-center mt-2">Tạo mới địa chỉ nhận hàng</h2>
+
+<div class="row mt-4">
+    <div class="col-md-4 container mx-auto">
+        <form asp-action="Create" class="d-flex flex-column gap-2">
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="ReceiverName" class="control-label"></label>
+                <input asp-for="ReceiverName" class="form-control" />
+                <span asp-validation-for="ReceiverName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Phone" class="control-label"></label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AddressLine" class="control-label"></label>
+                <input asp-for="AddressLine" class="form-control" />
+                <span asp-validation-for="AddressLine" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Province" class="control-label"></label>
+                <select asp-for="Province" class="form-control" id="tinh" title="Chọn Tỉnh Thành">
+                    <option value="">Tỉnh Thành</option>
+                </select>
+                <input type="hidden" id="ProvinceId" />
+                <span asp-validation-for="Province" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="District" class="control-label"></label>
+                <select asp-for="District" class="form-control" id="quan" title="Chọn Quận Huyện">
+                    <option value="">Phường Xã</option>
+                </select>
+                <input type="hidden" id="DistrictId" />
+
+                <span asp-validation-for="District" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Ward" class="control-label"></label>
+                <select asp-for="Ward" class="form-control" id="phuong" title="Chọn Phường Xã">
+                    <option value="">Phường Xã</option>
+                </select>
+                <input type="hidden" id="WardId" />
+
+                <span asp-validation-for="Ward" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsDefault" /> @Html.DisplayNameFor(model => model.IsDefault)
+                </label>
+            </div>
+            <div class="form-group text-end mt-4">
+                <a asp-action="Index" class="me-2">Quay lại</a>
+                <input type="submit" value="Tạo mới" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+</div>
+
+<script src="https://esgoo.net/scripts/jquery.js"></script>
+<script>
+    $(document).ready(function() {
+
+        // ===== LOAD TỈNH =====
+        $.getJSON('https://esgoo.net/api-tinhthanh/1/0.htm', function (data_tinh) {
+            if (data_tinh.error === 0) {
+                $("#tinh").html('<option value="">Tỉnh Thành</option>');
+
+                $.each(data_tinh.data, function (i, tinh) {
+                    $("#tinh").append(
+                        `<option value="${tinh.full_name}" data-id="${tinh.id}">
+                            ${tinh.full_name}
+                         </option>`
+                    );
+                });
+            }
+        });
+
+        // ===== CHỌN TỈNH → LOAD QUẬN =====
+        $("#tinh").on("change", function () {
+            let tinhId = $("#tinh option:selected").data("id");
+
+            $("#quan").html('<option value="">Quận Huyện</option>');
+            $("#phuong").html('<option value="">Phường Xã</option>');
+
+            if (!tinhId) return;
+
+            $.getJSON('https://esgoo.net/api-tinhthanh/2/' + tinhId + '.htm', function (data_quan) {
+                if (data_quan.error === 0) {
+                    $.each(data_quan.data, function (i, quan) {
+                        $("#quan").append(
+                            `<option value="${quan.full_name}" data-id="${quan.id}">
+                                ${quan.full_name}
+                             </option>`
+                        );
+                    });
+                }
+            });
+        });
+
+        // ===== CHỌN QUẬN → LOAD PHƯỜNG =====
+        $("#quan").on("change", function () {
+            let quanId = $("#quan option:selected").data("id");
+
+            $("#phuong").html('<option value="">Phường Xã</option>');
+
+            if (!quanId) return;
+
+            $.getJSON('https://esgoo.net/api-tinhthanh/3/' + quanId + '.htm', function (data_phuong) {
+                if (data_phuong.error === 0) {
+                    $.each(data_phuong.data, function (i, phuong) {
+                        $("#phuong").append(
+                            `<option value="${phuong.full_name}" data-id="${phuong.id}">
+                                ${phuong.full_name}
+                             </option>`
+                        );
+                    });
+                }
+            });
+        });
+
+     });
+</script>

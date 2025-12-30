@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBanMayTinh.Models;
 
@@ -11,9 +12,11 @@ using WebBanMayTinh.Models;
 namespace WebBanMayTinh.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class ShopBanMayTinhContextModelSnapshot : ModelSnapshot
+    [Migration("20251226141205_Add_Quantity_To_Order")]
+    partial class Add_Quantity_To_Order
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -168,9 +171,6 @@ namespace WebBanMayTinh.Migrations
                     b.Property<string>("District")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
@@ -530,9 +530,6 @@ namespace WebBanMayTinh.Migrations
                     b.Property<int?>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateOnly?>("UpdateAt")
                         .HasColumnType("date");
 
@@ -710,7 +707,7 @@ namespace WebBanMayTinh.Migrations
                         .IsRequired();
 
                     b.HasOne("WebBanMayTinh.Models.Product", "Product")
-                        .WithMany("OrderItems")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -761,8 +758,6 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("Images");
-
-                    b.Navigation("OrderItems");
 
                     b.Navigation("Specifications");
                 });

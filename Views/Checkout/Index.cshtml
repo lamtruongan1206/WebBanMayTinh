@@ -3,24 +3,33 @@
 *@
 @{
     var cnt = 0;
+    var btnDisabled = Model.Address == null || Model.Products.Count == 0;
 }
 @model CheckoutVM
 
 <div class="container min-vh-100 p-2">
+
     <div class="card mb-2">
         <div class="card-body">
             <h3>Địa chỉ nhận hàng</h3>
 
-            <div class="d-flex align-items-center justify-content-between">
-                <p>
-                    Trương Khánh Linh (+84) 397 594 866
-                    Đối diện mầm non Tân Tiến, inphotothuybich, Xã Tân Tiến, Huyện Yên Sơn, Tuyên Quang
-                </p>
+            @if (Model.Address == null)
+            {
+                <p>Bạn chưa cài đặt địa chỉ giao hàng ! <a asp-controller="Address" asp-action="Create" class="btn-link">Thêm ngay</a> </p>
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-between">
+                    <p>
+                        @Model.Address.ReceiverName (@Model.Address.Phone) . @Model.Address.AddressLine , @Model.Address.Ward , @Model.Address.District , @Model.Address.Province
+                    </p>
+                    <a asp-controller="Checkout" asp-action="ChangeAddress" class="btn-link " style="cursor: pointer">Thay đổi</a>
+                </div>
+            }
 
-                <a class="btn-link " style="cursor: pointer">Thay đổi</a>
-            </div>
         </div>
     </div>
+    
 
     <div class="card mb-2">
         <div class="card-body">
@@ -44,8 +53,8 @@
                             <th scope="row">@cnt</th>
                             <td>@i.Name</td>
                             <td>@i.Price</td>
-                            <td>@i.Quantity</td>
-                            <td>@(i.Price* i.Quantity)</td>
+                            <td>@i.OrderQuantity</td>
+                            <td>@(i.Price* i.OrderQuantity)</td>
                         </tr>
                     }
                 </tbody>
@@ -86,10 +95,11 @@
                 </div>
             </div>
             <hr />
-            <div class="text-end"> 
-                <a asp-controller="Cart" asp-action="Index" class="me-3 cur">Quay lại </a>
-                <a class="btn btn-primary">Đặt hàng </a>
-            </div>
+			<form asp-controller ="Checkout" asp-action="Add" class="text-end">
+                @Html.AntiForgeryToken()
+				<a asp-controller="Cart" asp-action="Index" class="me-3 cur">Quay lại </a>
+                <button type="submit" class="btn btn-primary" disabled="@btnDisabled">Đặt hàng</button>
+            </form>
 
         </div>
     </div>

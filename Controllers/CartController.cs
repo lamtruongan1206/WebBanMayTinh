@@ -1,14 +1,16 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Models.DTO;
+using WebBanMayTinh.Models.Views;
 
 public class CartController : Controller
 {
     DataContext conn;
     UserManager<AppUser> userManager;
-
     public CartController(
         DataContext context,
         UserManager<AppUser> userManager)
@@ -92,7 +94,8 @@ public class CartController : Controller
                     .Select(i => i.Url)
                     .FirstOrDefault()
                     ?? "/images/no-image.png",
-                Quantity = c.Quantity ?? 1
+                Quantity = c.Quantity ?? 1,
+                Checked = c.IsSelected ?? false,
             })
             .ToList();
 
@@ -122,25 +125,70 @@ public class CartController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> UpdateQuantity(Guid cartId, int quantity)
+    public async Task<IActionResult> UpdateQuantity([FromBody] CartUpdateQuantityVM vm)
     {
         var user = await userManager.GetUserAsync(User);
         var userId = user.Id;
         if (userId == null)
             return RedirectToAction("Login", "Login");
 
-        var item = conn.Carts.FirstOrDefault(c => c.Id == cartId);
+        var item = conn.Carts.FirstOrDefault(c => c.Id == vm.CartId);
         if (item == null) return RedirectToAction("Index");
 
-        if (quantity <= 0)
+        if (vm.Quantity <= 0)
             conn.Carts.Remove(item);
         else
-            item.Quantity = quantity;
+            item.Quantity = vm.Quantity;
 
         conn.SaveChanges();
         UpdateCartSession(userId);
 
         return RedirectToAction("Index");
     }
+
+    public async Task<IActionResult> Select(Guid cartId)
+    {
+        var cart = await conn.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
+
+        if (cart == null)
+        {
+            return NotFound();
+        } 
+
+        cart.IsSelected = true;
+
+        conn.SaveChanges();
+
+        return RedirectToAction("Index");
+    }
+
+    private async Task<IEnumerable<Cart>> GetCarts ()
+    {
+        var user = await userManager.GetUserAsync(User);
+
+        if (user == null)
+            return Enumerable.Empty<Cart>();
+
+        return conn.Carts.Where(c => c.UserId == user.Id);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleSelect([FromBody] ToggleCartVM model)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var cart = await conn.Carts
+            .FirstOrDefaultAsync(c => c.Id == model.CartId && c.UserId == userId);
+
+        if (cart == null) return NotFound();
+
+        cart.IsSelected = model.Selected;
+        await conn.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    
 
 }

@@ -88,7 +88,7 @@ namespace WebBanMayTinh.Areas.Controllers
             }
 
             // Tạo entity Computer
-            var computer = new Product
+            var product = new Product
             {
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
@@ -100,7 +100,7 @@ namespace WebBanMayTinh.Areas.Controllers
                 UpdateAt = DateOnly.FromDateTime(DateTime.Now)
             };
 
-            _context.Products.Add(computer);
+            _context.Products.Add(product);
 
             // Upload ảnh
             string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -116,10 +116,13 @@ namespace WebBanMayTinh.Areas.Controllers
                 {
                     dto.MainImage.CopyTo(fs);
                 }
+
+                product.ThumbnailUrl = mainPath;
+
                 _context.Images.Add(new Image
                 {
                     Id = Guid.NewGuid(),
-                    ProductId = computer.Id,
+                    ProductId = product.Id,
                     Url = $"/assets/img/Computer/{mainFileName}",
                     IsMain = true
                 });
@@ -139,7 +142,7 @@ namespace WebBanMayTinh.Areas.Controllers
                     _context.Images.Add(new Image
                     {
                         Id = Guid.NewGuid(),
-                        ProductId = computer.Id,
+                        ProductId = product.Id,
                         Url = $"/assets/img/Computer/{fileName}",
                         IsMain = false
                     });
@@ -222,6 +225,9 @@ namespace WebBanMayTinh.Areas.Controllers
                 {
                     dto.MainImage.CopyTo(fs);
                 }
+
+                computer.ThumbnailUrl = fileName;
+
                 _context.Images.Add(new Image
                 {
                     Id = Guid.NewGuid(),

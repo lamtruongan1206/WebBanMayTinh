@@ -13,6 +13,7 @@ namespace WebBanMayTinh.Models
 
         [Required]
         public Guid ProductId { get; set; }
+        [ForeignKey("ProductId")]
         public Product Product { get; set; }
 
         [Required]

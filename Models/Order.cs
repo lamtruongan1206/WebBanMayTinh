@@ -17,24 +17,31 @@ namespace WebBanMayTinh.Models
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
+        [Display(Name = "Thời gian tạo")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; }
+        [Display(Name = "Thời gian cập nhật")]
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        [Display(Name = "Trạng thái")]
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
-
+        [Display(Name = "Tiền hàng")]
         public decimal Subtotal { get; set; }
+        [Display(Name = "Tiền ship")]
         public decimal ShippingFee { get; set; }
+        [Display(Name = "Tổng")]
         public decimal TotalAmount { get; set; }
+        [Display(Name = "Số lượng")]
+        public int Quantity { get; set; }
 
         [Required]
         public string UserId { get; set; }
-        [ForeignKey("UserId")]
+        [ForeignKey("UserId"), Display(Name = "Tài khoản")]
         public virtual AppUser User { get; set; }
 
         [Required]
         public Guid AddressId { get; set; }
-        [ForeignKey("AddressId")]
+        [ForeignKey("AddressId"), Display(Name = "Địa chỉ")]
         public Address Address { get; set; }
 
-        public ICollection<OrderItems> OrderItems { get; set; }
+        public List<OrderItems> OrderItems { get; set; }
     }
 }

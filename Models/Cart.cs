@@ -15,6 +15,8 @@ public partial class Cart
 
     public string? UserId { get; set; }
 
+    public bool? IsSelected { get; set; }
+
     public virtual Product? Product { get; set; }
 
     public virtual AppUser? User { get; set; }

@@ -23,6 +23,7 @@ public partial class Product
     public Guid? CategoryId { get; set; }
     public string? Description { get; set; }
     public int? BrandId { get; set; }
+    public string? ThumbnailUrl { get; set; }
 
     public virtual Brand? Brand { get; set; }
     public virtual Category? Category { get; set; }
@@ -31,4 +32,5 @@ public partial class Product
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
     public virtual ICollection<Image> Images { get; set; } = new List<Image>();
     public virtual ICollection<Specification> Specifications { get; set; } = new List<Specification>();
+    public virtual ICollection<OrderItems> OrderItems { get; set; } = new List<OrderItems>();
 }
