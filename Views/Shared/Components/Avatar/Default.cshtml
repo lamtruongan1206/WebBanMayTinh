@@ -40,7 +40,7 @@
                 <a class="dropdown-item" asp-action="Index" asp-controller="Address">Địa chỉ</a>
             </li>
 
-            @if (Model.Role.Equals("Admin"))
+            @if (Model.Role.Equals("Admin") || Model.Role.Equals("Employee"))
             {
                 <li class="mr-0">
                     <a class="dropdown-item" asp-action="Index" asp-controller="Admin" asp-route-name="@User.Identity.Name">Quản trị</a>

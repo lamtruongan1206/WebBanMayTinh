@@ -1,7 +1,7 @@
 ﻿@*
 	
 *@
-@model IEnumerable<WebBanMayTinh.Models.AppUser>
+@model IEnumerable<UserVM>
 @{
     ViewData["Title"] = "Danh sách tài khoản";
     int num = 0;
@@ -42,7 +42,7 @@
                     <th>Họ tên</th>
                     <th>Email</th>
                     <th>Số điện thoại</th>
-                    @* <th>Vai trò</th> *@
+                    <th>Vai trò</th> 
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -54,10 +54,10 @@
                     <tr>
                         <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>@num</strong></td>
                         <td>@i.UserName</td>
-                        <td>@string.Join(" ", [i.FirstName, i.LastName])</td>
+                        <td>@i.FullName</td>
                         <td>@i.Email</td>
                         <td>@i.PhoneNumber</td>
-                        @* <td>@i.Role?.Name</td> *@
+                        <td>@string.Join(",", i.Roles)</td>
                         <td>
                             <div class="dropdown position-static">
                                 <button type="button" class="btn btn-primary btn-icon rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false">

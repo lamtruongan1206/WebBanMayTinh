@@ -19,7 +19,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         private IUserService userService;
 
 
-        private UserManager<AppUser> userManager;
+        private UserManager<AppUser> _userManager;
         private SignInManager<AppUser> signInManager;
         private RoleManager<IdentityRole> roleManager;
 
@@ -27,7 +27,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         {
             _context = context;
             this.userService = userService;
-            this.userManager = userManager;
+            this._userManager = userManager;
             this.signInManager = signInManager;
             this.roleManager = roleManager;
         }
@@ -35,8 +35,25 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var users = await userService.GetUsers();
-            return View(users);
+            var users = await _context.Users.ToListAsync();
+            var result = new List<UserVM>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+
+                result.Add(new UserVM
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    PhoneNumber = user.PhoneNumber,
+                    Email = user.Email,
+                    FullName = user.FirstName + " " + user.LastName,
+                    Roles = roles.ToList()
+                });
+            }
+
+            return View(result);
         }
 
         public async Task<IActionResult> Details(string? id)
@@ -107,7 +124,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var user = await userManager.FindByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -133,7 +150,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                    var currentUser = await userManager.FindByIdAsync(id);
+                    var currentUser = await _userManager.FindByIdAsync(id);
 
                     if (currentUser == null)
                     {
@@ -147,7 +164,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                     currentUser.LastName = model.LastName;
                     currentUser.Address = model.Address;
 
-                    var result = await userManager.UpdateAsync(currentUser);
+                    var result = await _userManager.UpdateAsync(currentUser);
 
                     if (!result.Succeeded)
                     {
@@ -216,9 +233,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
         public async Task<IActionResult> Permission(string id)
         {
-            var user = await userManager.FindByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id);
             var roles = _context.Roles;
-            var userRoles = await userManager.GetRolesAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
             ViewBag.UserRoles = userRoles;
             ViewBag.Roles = roles;
@@ -244,20 +261,20 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Permission(string id, List<PermissionVM> model)
         {
-            var user = await userManager.FindByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            var userRoles = await userManager.GetRolesAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
             foreach (var item in model)
             {
                 if (item.Checked && !userRoles.Contains(item.Role.Name))
                 {
-                    await userManager.AddToRoleAsync(user, item.Role.Name);
+                    await _userManager.AddToRoleAsync(user, item.Role.Name);
                 }
                 else if (!item.Checked && userRoles.Contains(item.Role.Name))
                 {
-                    await userManager.RemoveFromRoleAsync(user, item.Role.Name);
+                    await _userManager.RemoveFromRoleAsync(user, item.Role.Name);
                 }
             }
 

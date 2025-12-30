@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Services;
+using WebBanMayTinh.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,5 +85,11 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+using (var scope = app.Services.CreateScope())
+{
+    var service = scope.ServiceProvider; 
+    await DataSeed.SeedAdminAsync(service);
+}
 
 app.Run();

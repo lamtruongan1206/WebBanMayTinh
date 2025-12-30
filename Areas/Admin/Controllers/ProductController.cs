@@ -9,7 +9,7 @@ using WebBanMayTinh.Models.DTO;
 namespace WebBanMayTinh.Areas.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Employee")]
     public class ProductController : Controller
     {
         DataContext _context = new DataContext();
