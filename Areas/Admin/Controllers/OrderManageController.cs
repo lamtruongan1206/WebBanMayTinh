@@ -20,21 +20,18 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             _context = context;
         }
 
-        private void InitViewBagStatus()
+        private void InitViewBagStatus(OrderStatus currentStatus = OrderStatus.Pending)
         {
-            ViewBag.OrderStatus = new SelectList(
-                    Enum.GetValues(typeof(OrderStatus))
-                    .Cast<OrderStatus>()
-                    .Select(s => new
-                    {
-                        Id = (int)s,
-                        Name = s.ToString()
-                    })
-                    .ToList(),
-                    "Id",
-                    "Name"
-                );
-
+            var list = Enum.GetValues(typeof(OrderStatus))
+            .Cast<OrderStatus>()
+            .Where(s => (int)s > (int)currentStatus)   // CHỖ QUAN TRỌNG
+            .Select(s => new
+            {
+                Id = (int)s,
+                Name = s.ToString()
+            })
+            .ToList();
+            ViewBag.OrderStatus = new SelectList(list, "Id", "Name");
         }
 
         // GET: Admin/OrderManage
@@ -96,17 +93,21 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         // GET: Admin/OrderManage/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
-            InitViewBagStatus();
+
             if (id == null)
             {
                 return NotFound();
             }
 
             var order = await _context.Orders.FindAsync(id);
+
+            InitViewBagStatus(order.Status);
+
             if (order == null)
             {
                 return NotFound();
             }
+
             return View(new OrderEditVM
             {
                 OrderId = order.Id,

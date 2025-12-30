@@ -31,6 +31,10 @@ namespace WebBanMayTinh.Models
         public decimal TotalAmount { get; set; }
         [Display(Name = "Số lượng")]
         public int Quantity { get; set; }
+        [Display(Name = "Khách hàng đã nhận")]
+        
+        bool IsReceived = false;
+        DateTime? ReceivedTime;
 
         [Required]
         public string UserId { get; set; }

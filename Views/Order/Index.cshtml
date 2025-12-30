@@ -38,9 +38,22 @@
                     
                 }
                 <div class="text-end">
-                    <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
-                        Yêu cầu hủy đơn
-                    </a>
+                    @if (order.OrderStatus == OrderStatus.Completed)
+                    {
+                        <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                            Đánh giá
+                        </a>
+                        <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                            Xác nhận đã nhận đơn
+                        </a>
+                    }
+
+                    @if (order.OrderStatus < OrderStatus.Shipping)
+                    {
+                        <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                            Yêu cầu hủy đơn
+                        </a>
+                    }
                     <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
                         Chi tiết
                     </a>
