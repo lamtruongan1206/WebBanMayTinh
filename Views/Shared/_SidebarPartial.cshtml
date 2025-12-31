@@ -1,0 +1,72 @@
+﻿@using WebBanMayTinh.Models
+
+@{
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    var brands = ViewBag.Brands as IEnumerable<Brand>;
+
+    Guid? currentCategoryId = ViewBag.SelectedCategory;
+    int? currentBrandId = ViewBag.SelectedBrand;
+}
+
+<style>
+    /* ===== SIDEBAR LINK ===== */
+    .sidebar-link {
+        display: block;
+        padding: 10px 15px;
+        color: #333;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+        .sidebar-link:hover {
+            background-color: #f1f1f1;
+            color: #0d6efd;
+        }
+
+        .sidebar-link.active {
+            background-color: #0d6efd;
+            color: #fff !important;
+            font-weight: 600;
+        }
+</style>
+
+<div class="col-md-3">
+
+    <!-- ===== CATEGORY ===== -->
+    <div class="card mb-3">
+        <div class="card-header fw-bold">
+            Danh mục
+        </div>
+        <div class="list-group list-group-flush">
+            @foreach (var c in categories)
+            {
+                <a asp-action="Index"
+                   asp-route-categoryId="@c.Id"
+                   asp-route-brandId="@currentBrandId"
+                   class="sidebar-link @(currentCategoryId == c.Id ? "active" : "")">
+                    @c.Name
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- ===== BRAND ===== -->
+    <div class="card">
+        <div class="card-header fw-bold">
+            Thương hiệu
+        </div>
+        <div class="list-group list-group-flush">
+            @foreach (var b in brands)
+            {
+                <a asp-action="Index"
+                   asp-route-brandId="@b.Id"
+                   asp-route-categoryId="@currentCategoryId"
+                   class="sidebar-link @(currentBrandId == b.Id ? "active" : "")">
+                    @b.Name
+                </a>
+            }
+        </div>
+    </div>
+
+</div>
