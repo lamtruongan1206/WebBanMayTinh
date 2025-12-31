@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Configuration;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol;
 using WebBanMayTinh.Models;
 
 namespace WebBanMayTinh.Services
@@ -8,7 +10,7 @@ namespace WebBanMayTinh.Services
     {
         private readonly DataContext context;
         private readonly ILogger<UserService> logger;
-
+        private readonly IEmailSender emailSender;
 
         private UserManager<AppUser> userManager;
         private SignInManager<AppUser> signInManager;
@@ -16,12 +18,14 @@ namespace WebBanMayTinh.Services
 
         public UserService(DataContext context, ILogger<UserService> logger,
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager) 
+            SignInManager<AppUser> signInManager,
+            IEmailSender emailSender) 
         {
             this.context = context;
             this.logger = logger;
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.emailSender = emailSender;
         }
 
         public async Task<IEnumerable<AppUser>> GetUsers()
@@ -30,19 +34,46 @@ namespace WebBanMayTinh.Services
             return users;
         }
 
-        async Task<bool> IUserService.Login(string username, string password)
+        async Task<SignInResult> IUserService.Login(string username, string password)
         {
             var existingUser = await userManager.FindByNameAsync(username);
-            if (existingUser == null) return false;
+            if (existingUser == null) return SignInResult.Failed;
 
             try
             {
                 SignInResult result = await signInManager.PasswordSignInAsync(existingUser, password, false, false);
-                return result.Succeeded;
+                
+                //if (result.Succeeded)
+                //{
+                //    var receciver = existingUser.Email;
+                //    var subject = "Đăng nhập thiết bị thành công";
+                //    var message = "Xin chào bạn, chúng tôi là Shop bán máy tinh";
+
+                //    await emailSender.SendEmailAsync(receciver, subject, message);
+
+                //    return true;
+                //}
+                
+                return result;
             } catch (Exception ex)
             {
-                return false;
+                return SignInResult.Failed;
             }
+        }
+
+        async Task<IdentityResult> IUserService.Register(AppUser user, string password)
+        {
+            var existedUser = await userManager.FindByEmailAsync(user.Email);
+
+            // Nếu tài khoản chưa comfirm thì cho xóa đi tạo lại
+            if (existedUser != null && !existedUser.EmailConfirmed)
+            {
+                await userManager.DeleteAsync(existedUser);
+            }
+
+            var result = await userManager.CreateAsync(user, password);
+
+            return result;
         }
 
         async Task<bool> IUserService.AddUser(AppUser user, string password)
@@ -80,7 +111,8 @@ namespace WebBanMayTinh.Services
             //    context.Users.Remove(user);
             //    context.SaveChanges();
             //    return true;
-            //} catch (Exception ex)
+            //}
+            //catch (Exception ex)
             //{
             //    logger.LogError("Update User Error: {m}", ex.Message);
             //    return false;
@@ -107,6 +139,32 @@ namespace WebBanMayTinh.Services
         async void IUserService.Logout()
         {
             await signInManager.SignOutAsync();
+        }
+
+        async Task<string> IUserService.GenerateEmailConfirmToken(AppUser user)
+        {
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            return token;
+        }
+
+        async Task<IdentityResult?> IUserService.ConfirmEmail(string userId, string token)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                var result = await userManager.ConfirmEmailAsync(user, token);
+                return result;
+
+            } catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

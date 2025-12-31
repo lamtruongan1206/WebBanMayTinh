@@ -20,7 +20,8 @@ namespace WebBanMayTinh.Utils
 
             // 2. Tạo tài khoản Admin nếu chưa có
             var adminEmail = "admin@gmail.com";
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            var username = "admin";
+            var adminUser = await userManager.FindByNameAsync(username);
 
             if (adminUser == null)
             {

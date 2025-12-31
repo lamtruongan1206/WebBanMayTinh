@@ -13,7 +13,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
-    public class AccountController : Controller
+    public class UserController : Controller
     {
         private readonly DataContext _context;
         private IUserService userService;
@@ -23,7 +23,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         private SignInManager<AppUser> signInManager;
         private RoleManager<IdentityRole> roleManager;
 
-        public AccountController(DataContext context, IUserService userService, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public UserController(DataContext context, IUserService userService, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             this.userService = userService;

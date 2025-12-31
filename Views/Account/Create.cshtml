@@ -44,7 +44,7 @@
                             <div class="alert alert-danger">@TempData["error"]</div>
                         }
 
-                        <form class="mb-6" asp-action="Create" asp-controller="Account" method="post">
+                        <form id="form-register" class="mb-6" asp-action="Create" asp-controller="Account" method="post">
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             @Html.AntiForgeryToken()    
 
@@ -94,7 +94,7 @@
                                 <input type="text" class="form-control" asp-for="Phone" placeholder="Nhập số điện thoại" pattern="^[0-9]{10}$" />
                                 <span asp-validation-for="Phone" class="text-danger "></span>
                             </div>
-                            <button class="btn btn-primary d-grid w-100">Đăng ký</button>
+                            <button id="btn-submit" class="btn btn-primary d-grid w-100">Đăng ký</button>
                         </form>
 
                         <p class="text-center">
@@ -106,5 +106,17 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const submitBtn = document.getElementById("btn-submit");
+        const formRegister = document.getElementById("form-register");
+
+
+        formRegister.addEventListener("submit", () => 
+            submitBtn.disabled = true
+        })
+
+
+    </script>
 </body>
 </html>

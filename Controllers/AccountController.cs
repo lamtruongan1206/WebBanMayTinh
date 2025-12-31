@@ -17,14 +17,17 @@ namespace WebBanMayTinh.Controllers
         private readonly DataContext context;
         private ILogger<AccountController> logger;
         private IUserService userService;
+        private IEmailSender emailSender;
         public AccountController(
             DataContext context,
             ILogger<AccountController> logger,
-            IUserService userService)
+            IUserService userService,
+            IEmailSender emailSender)
         {
             this.context = context;
             this.logger = logger;
             this.userService = userService;
+            this.emailSender = emailSender;
         }
         // GET: AccountController
         [HttpGet]
@@ -95,7 +98,7 @@ namespace WebBanMayTinh.Controllers
             }
 
             var currentUser = context.Users.FirstOrDefault(u => u.UserName == userVM.Username || u.Email == userVM.Email);
-            if (currentUser != null)
+            if (currentUser != null && currentUser.EmailConfirmed == true)
             {
                 TempData["error"] = "Tài khoản này đã tồn tại";
                 return View();
@@ -112,15 +115,34 @@ namespace WebBanMayTinh.Controllers
                     Email = userVM.Email,
                 };
 
-                var succeeded = await userService.AddUser(user, userVM.Password);
-                if (succeeded)
+                var result = await userService.Register(user, userVM.Password);
+                
+                if (result.Succeeded)
                 {
-                    TempData["success"] = "Tạo tài khoản thành công";
+                    var token = await userService.GenerateEmailConfirmToken(user);
+
+                    var url = Url.Action(
+                        "ConfirmEmail",
+                        "Account",
+                        new  {userId = user.Id, token},
+                        Request.Scheme
+                        );
+
+                    await emailSender.SendEmailAsync(user.Email, "Xác thực tài khoản", $"Click vào link để xác nhận: {url}");
+                    TempData["success"] = "Tạo tài khoản thành công, hãy vào gmail để xác thực tài khoản trước nhé";
                     return Redirect("/account/login");
                 }
                 else
                 {
-                    TempData["error"] = "Tạo tài khoản thất bại";
+                    if (result.Errors.Count() >= 1)
+                    {
+                        TempData["error"] = result.Errors.First().Code.Contains("PasswordRequiresDigit") ? "Mật khẩu yêu cầu phải có cả số và chữ" : "Tạo tài khoản thất bại";
+                    }
+                    else
+                    {
+                        TempData["error"] = "Tạo tài khoản thất bại";
+                    }
+
                     return View();
                 }
             }
@@ -130,9 +152,28 @@ namespace WebBanMayTinh.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (userId == null || token == null)
+                return BadRequest();
+
+            var result = await userService.ConfirmEmail(userId, token);
+
+            if (result is null) return BadRequest();
+
+            if (result.Succeeded)
+            {
+                return Redirect("/");
+            }
+            else
+            {
+                return Redirect("/account/login");
+            }
+        }
+
         public ActionResult Login()
         {
-            
             return View();
         }
 
@@ -146,19 +187,25 @@ namespace WebBanMayTinh.Controllers
                 return View();
             }
 
-            var succeeded = await userService.Login(
+            var signInResult = await userService.Login(
                 vm.Username, vm.Password);
 
-            if (succeeded)
+            if (signInResult.Succeeded)
             {
                 return Redirect("/");
             }
+            else if (signInResult.IsNotAllowed)
+            {
+                TempData["error"] = "Tài khoản của bạn chưa được xác thực, hãy vào gmail để xác thực tài khoản";
+                return View();
+            } 
             else
             {
                 TempData["error"] = "Tài khoản mật khẩu không chính xác";
                 return View(vm);
             }
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

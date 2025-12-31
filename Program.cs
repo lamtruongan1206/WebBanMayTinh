@@ -21,6 +21,7 @@ builder.Services.AddSession(options =>
 // Add services to the container.
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -39,6 +40,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 4;
 
+    options.SignIn.RequireConfirmedEmail = true;
 
     // User settings.
     options.User.AllowedUserNameCharacters =
