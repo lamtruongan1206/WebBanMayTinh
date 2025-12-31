@@ -1,8 +1,13 @@
 ﻿using System.Configuration;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol;
+using Org.BouncyCastle.Crypto.Generators;
+using WebBanMayTinh.Areas.Admin.Models.Views;
 using WebBanMayTinh.Models;
+using WebBanMayTinh.Models.Views;
 
 namespace WebBanMayTinh.Services
 {
@@ -14,24 +19,34 @@ namespace WebBanMayTinh.Services
 
         private UserManager<AppUser> userManager;
         private SignInManager<AppUser> signInManager;
+        private IHttpContextAccessor httpContextAccessor;
 
 
         public UserService(DataContext context, ILogger<UserService> logger,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            IEmailSender emailSender) 
+            IEmailSender emailSender,
+            IHttpContextAccessor httpContextAccessor) 
         {
             this.context = context;
             this.logger = logger;
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.emailSender = emailSender;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IEnumerable<AppUser>> GetUsers()
         {
             var users = await context.Users.ToListAsync();
             return users;
+        }
+
+        public async Task<AppUser?> GetCurrentUser()
+        {
+            var principal = httpContextAccessor.HttpContext?.User;
+            if (principal is null) return null;
+            return await userManager.GetUserAsync(principal);
         }
 
         async Task<SignInResult> IUserService.Login(string username, string password)
@@ -120,12 +135,75 @@ namespace WebBanMayTinh.Services
             throw new NotImplementedException();
         }
 
-        AppUser IUserService.GetUser(string id)
+        async Task<AppUser> IUserService.GetUser(string id)
         {
-            //var user = context.Users.FirstOrDefault(x => x.Id==id);
-            //return user;
-            throw new NotImplementedException();
+            return await userManager.FindByIdAsync(id);
         }
+
+        async Task<bool> IUserService.SendChangePasswordOtp(ChangePasswordVM vm)
+        {
+            var user = await userManager.FindByNameAsync(vm.Username);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            var otp = Random.Shared.Next(100000, 999999).ToString();
+
+            var passwordOtp = new PasswordOtp
+            {
+                UserId = user.Id,
+                ExpiredAt = DateTime.UtcNow.AddMinutes(5),
+                OtpHash = otp,
+                IsUsed = false
+            };
+
+            context.PasswordOtps.Add(passwordOtp);
+            await context.SaveChangesAsync();
+
+            await emailSender.SendEmailAsync(
+                user.Email,
+                "Mã xác thực đổi mật khẩu",
+                "Mã otp của bạn là: " + otp + " (hết hạn sau 5p)"
+                );
+
+            return true;
+        }
+
+        async Task<bool> IUserService.ChangePassword(string newPassword, string otp)
+        {
+            var user = await GetCurrentUser();
+            if (user == null) return false;
+
+            var otpEntity = await context.PasswordOtps
+                .Where(x => x.UserId == user.Id && !x.IsUsed)
+                .OrderByDescending(x => x.ExpiredAt)
+                .FirstOrDefaultAsync();
+
+            if (otpEntity == null ||
+                otpEntity.ExpiredAt < DateTime.UtcNow)
+            {
+                return false;
+            }
+
+            otpEntity.IsUsed = true;
+            await context.SaveChangesAsync();
+
+            var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            var result = await userManager.ResetPasswordAsync(
+                user,
+                resetToken,
+                newPassword
+            );
+
+            if (!result.Succeeded) return false;
+
+            await signInManager.SignOutAsync();
+            return true;
+        }
+
 
         bool IUserService.UpdateUser(AppUser user)
         {
@@ -147,6 +225,35 @@ namespace WebBanMayTinh.Services
             return token;
         }
 
+        async Task<bool> IUserService.VerifyPassword(string username, string password)
+        {
+            var user = await userManager.FindByNameAsync(username);
+            try
+            {
+                return await userManager.CheckPasswordAsync(user, password);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        async Task<string> IUserService.GeneratePasswordResetTokenAsync(string email)
+        {
+            var user = await userManager.FindByEmailAsync(email); 
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            return token;
+        }
+
+        async Task<IdentityResult> IUserService.ResetPasswordAsync(ResetPasswordVM resetPasswordVM)
+        {
+            var user = await userManager.FindByEmailAsync(resetPasswordVM.Email);
+            var result = await userManager.ResetPasswordAsync(user, resetPasswordVM.Token, resetPasswordVM.Password);
+            return result;
+        }
+
         async Task<IdentityResult?> IUserService.ConfirmEmail(string userId, string token)
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -165,6 +272,13 @@ namespace WebBanMayTinh.Services
             {
                 return null;
             }
+        }
+
+        async Task<bool> IUserService.IsExisted(string username)
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserName == username || u.Email == username);
+            if (user is null) return false;
+            else return true;
         }
     }
 }

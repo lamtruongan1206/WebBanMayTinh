@@ -20,7 +20,7 @@ namespace WebBanMayTinh.Services
             var identity = await base.GenerateClaimsAsync(user);
 
             identity.AddClaim(new Claim("Avatar", user.Avatar ?? ""));
-
+            identity.AddClaim(new Claim("FullName", user.FirstName + " " + user.LastName ?? ""));
             return identity;
         }
     }

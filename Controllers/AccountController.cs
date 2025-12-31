@@ -1,9 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using WebBanMayTinh.Areas.Admin.Models.Views;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Models.Views;
@@ -39,7 +44,6 @@ namespace WebBanMayTinh.Controllers
             {
                 return Redirect("/login");
             }
-
             return View(user);
         }
 
@@ -256,5 +260,192 @@ namespace WebBanMayTinh.Controllers
                 return View();
             }
         }
+        public async Task<IActionResult> ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (!await userService.IsExisted(email))
+            {
+                TempData["error"] = "Tài khoản này không tồn tại";
+                return View("ForgotPassword");
+            }
+
+            var token = await userService.GeneratePasswordResetTokenAsync(email);
+
+            var callbackUrl = Url.Action(
+                "ResetPassword",
+                "Account",
+                new { token, email },
+                Request.Scheme
+            );
+
+            await emailSender.SendEmailAsync(
+                email,
+                "Reset mật khẩu",
+                $"Click vào link: {callbackUrl}"
+            );
+
+            TempData["success"] = "Email xác thực đã được gửi đến Email của bạn, hãy kiếm tra và đổi lại mật khẩu";
+            return View("ForgotPassword");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token, string email)
+        {
+            return View(new ResetPasswordVM
+            {
+                Token = token,
+                Email = email
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordVM model)
+        {
+            if (!await userService.IsExisted(model.Email))
+                return RedirectToAction("ResetPasswordConfirmation");
+
+            var result = await userService.ResetPasswordAsync(model);
+
+            if (result.Succeeded)
+            {
+                TempData["success"] = "Đổi mật khẩu mới thành công";
+                return RedirectToAction("Login");
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View(model);
+        }
+
+        [HttpGet, Authorize]
+        public async Task<IActionResult> ChangePassword(string name)
+        {
+            return View(new ChangePasswordVM
+            {
+                Username = name ?? User.Identity!.Name!
+            });
+        }
+
+        [HttpPost, Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordVM vm)
+        {
+            if (vm.NewPassword != vm.ConfirmPassword)
+            {
+                TempData["error"] = "Mật khẩu không trùng khớp";
+                return View(vm);
+            }
+
+            if (!await userService.VerifyPassword(vm.Username, vm.OldPassword))
+            {
+                TempData["error"] = "Mật khẩu cũ không đúng";
+                return View(vm);
+            }
+
+            var isSent = await userService.SendChangePasswordOtp(vm);
+            if (isSent)
+            {
+                TempData["success"] = "Vui lòng kiểm tra email của bạn để lấy mã otp";
+                HttpContext.Session.SetString("NewPassword", vm.NewPassword);
+                
+                ViewBag.NewPassword = vm.NewPassword;
+
+                return RedirectToAction("VerifyOtp");
+            }
+            else
+            {
+                TempData["error"] = "Không thể gửi mã otp";
+                return View();
+            }
+        }
+
+        [Authorize, HttpGet]
+        public async Task<IActionResult> VerifyOtp()
+        {
+            return View();
+        }
+
+        [Authorize, HttpPost]
+        public async Task<IActionResult> VerifyOtp(string otp)
+        {
+            var newPassword = HttpContext.Session.GetString("NewPassword");
+            if (string.IsNullOrEmpty(otp))
+            {
+                TempData["error"] = "Đã có lỗi xảy ra";
+                return RedirectToAction("ChangePassword");
+            }
+            var result = await userService.ChangePassword(newPassword, otp.Trim());
+            if (result)
+            {
+                TempData["success"] = "Đổi mật khẩu thành công";
+                return Redirect("/account/login");
+            }
+            else
+            {
+                TempData["error"] = "Không thể đổi mật khẩu";
+                return RedirectToAction("ChangePassword");
+            }
+
+        }
+
+
+        public async Task LoginByGoogle()
+        {
+            await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme,
+                new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action("GoogleResponse")
+                });
+        }
+
+        public async Task<IActionResult> GoogleResponse ()
+        {
+            var result = await HttpContext
+                .AuthenticateAsync(IdentityConstants.ExternalScheme);
+
+            if (result == null || !result.Succeeded || result.Principal == null)
+            {
+                return Redirect("/account/login");
+            }
+
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
+            var picture = result.Principal.FindFirstValue("picture");
+
+            var isExisted = await userService.IsExisted(email);
+
+            if (!isExisted)
+            {
+                var user = new AppUser
+                {
+                    Email = email,
+                    UserName = email,
+                    FirstName = name,
+                    EmailConfirmed = true,
+                    Avatar = picture,
+                };
+
+                await userService.AddUser(user, "ComputerShop123");
+            }
+
+            await userService.Login(email, "ComputerShop123");
+
+            var claims = result.Principal.Identities.FirstOrDefault().Claims.Select(claim => new
+            {
+                claim.Value,
+                claim.Type,
+                claim.Issuer,
+                claim.OriginalIssuer
+            });
+
+            //TempData["success"] = "Đăng nhập thành công";
+            return Redirect("/");
+        }
+
     }
 }

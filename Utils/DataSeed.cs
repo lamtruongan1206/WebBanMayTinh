@@ -31,7 +31,7 @@ namespace WebBanMayTinh.Utils
                     Email = adminEmail,
                     EmailConfirmed = true,
                     FirstName = "System",
-                    LastName = "Admin"
+                    LastName = "Admin",
                 };
 
                 var result = await userManager.CreateAsync(adminUser, "Admin@123");

@@ -15,7 +15,7 @@
             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                data-bs-toggle="dropdown" aria-expanded="false">
                 <img class="" src="@Model.Avatar" style="width: 20px; height: 20px" />
-                <span class="ms-2">@Model.UserName</span>
+                <span class="ms-2">@Model.FullName</span>
             </a>
         }
         else
@@ -33,12 +33,16 @@
             </li>
 
             <li class="mr-0">
-                <a class="dropdown-item" asp-action="Index" asp-controller="Order">Đơn hàng</a>
+                <a class="dropdown-item" asp-action="ChangePassword" asp-controller="Account" asp-route-name="@User.Identity.Name">Đổi mật khẩu</a>
             </li>
 
             <li class="mr-0">
-                <a class="dropdown-item" asp-action="Index" asp-controller="Address">Địa chỉ</a>
+                <a class="dropdown-item" asp-action="Index" asp-controller="Order">Đơn hàng</a>
             </li>
+
+            @* <li class="mr-0">
+                <a class="dropdown-item" asp-action="Index" asp-controller="Address">Địa chỉ</a>
+            </li> *@
 
             @if (Model.Role.Equals("Admin") || Model.Role.Equals("Employee"))
             {

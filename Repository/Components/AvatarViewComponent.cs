@@ -17,6 +17,7 @@ namespace WebBanMayTinh.Repository.Components
             {
                 UserName = UserClaimsPrincipal.Identity.Name ?? "",
                 Avatar = UserClaimsPrincipal.FindFirst("Avatar")?.Value ?? "",
+                FullName = UserClaimsPrincipal.FindFirst("FullName")?.Value ?? "",
                 Role = UserClaimsPrincipal.FindFirst(ClaimTypes.Role)?.Value ?? ""
             });
         }

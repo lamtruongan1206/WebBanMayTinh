@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Models;
@@ -18,6 +19,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddHttpContextAccessor();
 // Add services to the container.
 
 builder.Services.AddScoped<IUserService, UserService>();
@@ -30,6 +33,20 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Login";
+    options.AccessDeniedPath = "/Error/403";
+});
+
+builder.Services.AddAuthentication()
+    .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId = builder.Configuration["GoogleKeys:ClientId"];
+        options.ClientSecret = builder.Configuration["GoogleKeys:ClientSecret"];
+        options.CallbackPath = "/signin-google";
+    });
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -48,15 +65,6 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = false;
 });
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, AppClaimsFactory>();
-
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Login"; // Trang login
-        options.AccessDeniedPath = "/Error/403"; // Trang từ chối truy cập
-    });
-
 builder.Services.AddAuthorization();
 
 var app = builder.Build();

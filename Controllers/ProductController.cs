@@ -13,53 +13,80 @@ namespace WebBanMayTinh.Controllers
 
 
         // ================== INDEX ==================
-        public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
+        public IActionResult Index(
+         string? searchName,
+         string? searchManufacturer,
+         decimal? priceFrom,
+         decimal? priceTo,
+         Guid? categoryId,     // lọc theo category
+         int? brandId,         // lọc theo brand
+         int page = 1)
         {
-            // Lấy dữ liệu cơ bản
+            int pageSize = 6;
+
+            // ==============================
+            // 1. Query gốc từ Product
+            // ==============================
             var query = _context.Products
-                .Include(c => c.Category)
-                .Include(c => c.Images)
+                .Include(p => p.Category)   // để hiển thị tên Category
+                .Include(p => p.Images)     // để lấy ảnh
                 .AsQueryable();
 
-            // Lọc theo tên
+            // ==============================
+            // 2. FILTER
+            // ==============================
             if (!string.IsNullOrEmpty(searchName))
-            {
-                query = query.Where(c => c.Name.Contains(searchName));
-            }
+                query = query.Where(p => p.Name.Contains(searchName));
 
-            // Lọc theo hãng sản xuất
             if (!string.IsNullOrEmpty(searchManufacturer))
-            {
-                query = query.Where(c => c.Manufacturer.Contains(searchManufacturer));
-            }
+                query = query.Where(p => p.Manufacturer.Contains(searchManufacturer));
 
-            // Lọc theo khoảng giá
             if (priceFrom.HasValue)
-                query = query.Where(c => c.Price >= priceFrom.Value);
+                query = query.Where(p => p.Price >= priceFrom.Value);
+
             if (priceTo.HasValue)
-                query = query.Where(c => c.Price <= priceTo.Value);
+                query = query.Where(p => p.Price <= priceTo.Value);
 
-            // Tổng số bản ghi sau lọc
+            if (categoryId.HasValue)
+                query = query.Where(p => p.CategoryId == categoryId);
+
+            if (brandId.HasValue)
+                query = query.Where(p => p.BrandId == brandId);
+
+            // ==============================
+            // 3. PHÂN TRANG
+            // ==============================
             int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-            // Phân trang
-            var computers = query
-                .OrderBy(c => c.Name)
+            var products = query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
-            // Truyền dữ liệu phân trang qua ViewBag
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            // ==============================
+            // 4. DATA CHO SIDEBAR
+            // ==============================
+            ViewBag.Categories = _context.Categories.ToList(); // danh mục
+            ViewBag.Brands = _context.Brand.ToList();          // thương hiệu
 
-            // Truyền lại các giá trị tìm kiếm để giữ trên form
+            // ==============================
+            // 5. LƯU GIÁ TRỊ ĐANG CHỌN
+            // ==============================
+            ViewBag.SelectedCategory = categoryId;
+            ViewBag.SelectedBrand = brandId;
+
+            // ==============================
+            // 6. VIEWBAG CHO FORM + PAGING
+            // ==============================
             ViewBag.SearchName = searchName;
             ViewBag.SearchManufacturer = searchManufacturer;
             ViewBag.PriceFrom = priceFrom;
             ViewBag.PriceTo = priceTo;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
 
-            return View(computers);
+            return View(products);
         }
 
         // ================== ADD ==================
