@@ -108,3 +108,5 @@ yarn-error.log*
 *.db
 *.DS_Store
 Thumbs.db
+
+*.env
