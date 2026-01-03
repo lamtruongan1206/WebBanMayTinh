@@ -57,20 +57,24 @@ namespace WebBanMayTinh.Services
             try
             {
                 SignInResult result = await signInManager.PasswordSignInAsync(existingUser, password, false, false);
-                
-                //if (result.Succeeded)
-                //{
-                //    var receciver = existingUser.Email;
-                //    var subject = "Đăng nhập thiết bị thành công";
-                //    var message = "Xin chào bạn, chúng tôi là Shop bán máy tinh";
-
-                //    await emailSender.SendEmailAsync(receciver, subject, message);
-
-                //    return true;
-                //}
-                
                 return result;
             } catch (Exception ex)
+            {
+                return SignInResult.Failed;
+            }
+        }
+
+        async Task<SignInResult> IUserService.LoginWithGoogle(string email)
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+            if (existingUser == null) return SignInResult.Failed;
+      
+            try
+            {
+                await signInManager.SignInAsync(existingUser, false);
+                return SignInResult.Success;
+            }
+            catch (Exception ex)
             {
                 return SignInResult.Failed;
             }

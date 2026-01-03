@@ -12,6 +12,7 @@ namespace WebBanMayTinh.Services
         Task<AppUser?> GetUser(string id);
         Task<IEnumerable<AppUser>> GetUsers();
         Task<SignInResult> Login(string user, string password);
+        Task<SignInResult> LoginWithGoogle(string email);
         Task<IdentityResult> Register(AppUser user, string password);
         Task<bool> IsExisted(string username);
         Task<bool> VerifyPassword(string username, string password);
