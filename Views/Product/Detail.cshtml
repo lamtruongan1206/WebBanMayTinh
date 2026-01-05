@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Chi tiết máy tính";
+    var relatedProducts = ViewBag.RelatedProducts as List<Product>;
 }
 
 <div class="container mt-4">
@@ -10,7 +11,6 @@
     <div class="row">
         <!-- Ảnh chính -->
         <div class="col-md-4">
-          <!--  <h5>Ảnh chính</h5> -->
             @{
                 var mainImage = Model.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
             }
@@ -42,10 +42,6 @@
                     <td>@Model.Category?.Name</td>
                 </tr>
                 <tr>
-                    <th>Mô tả</th>
-                    <td>@Model.Description</td>
-                </tr>
-                <tr>
                     <th>Ngày tạo</th>
                     <td>@Model.CreateAt?.ToString("dd/MM/yyyy")</td>
                 </tr>
@@ -54,13 +50,18 @@
                     <td>@Model.UpdateAt?.ToString("dd/MM/yyyy")</td>
                 </tr>
             </table>
+
+            <!-- Mô tả xuống dưới bảng -->
+            <div class="mt-3">
+                <h5>Mô tả</h5>
+                <p>@Model.Description</p>
+            </div>
         </div>
     </div>
 
     <!-- Ảnh phụ -->
     <div class="row mt-4">
         <div class="col">
-           <!-- <h5>Ảnh phụ</h5> -->
             @if (Model.Images != null && Model.Images.Any(i => !i.IsMain))
             {
                 foreach (var img in Model.Images.Where(i => !i.IsMain))
@@ -74,6 +75,32 @@
             }
         </div>
     </div>
+
+    <!-- Sản phẩm liên quan -->
+    @if (relatedProducts != null && relatedProducts.Any())
+    {
+        <div class="mt-5">
+            <h4>Sản phẩm liên quan</h4>
+            <div class="row">
+                @foreach (var p in relatedProducts)
+                {
+                    var imgUrl = p.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card h-100">
+                            <img src="@imgUrl" class="card-img-top" style="height:150px; object-fit:cover;" />
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1" style="font-size:0.9rem;">@p.Name</h6>
+                                <p class="mb-0" style="font-size:0.85rem;">@p.Price</p>
+                            </div>
+                            <div class="card-footer p-2">
+                                <a asp-action="Detail" asp-route-id="@p.Id" class="btn btn-sm btn-primary w-100">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 
     <div class="mt-4">
         <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>

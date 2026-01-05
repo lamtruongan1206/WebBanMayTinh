@@ -310,16 +310,36 @@ namespace WebBanMayTinh.Areas.Controllers
         [HasPermission(CustomClaimTypes.Permission, Permissions.ProductRead)]
         public IActionResult Detail(Guid id)
         {
-            // Lấy máy tính theo id, bao gồm các ảnh
             var computer = _context.Products
                 .Include(c => c.Images)
-                .Include(c => c.Category) // Nếu muốn hiển thị tên danh mục
+                .Include(c => c.Category)
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();
 
-            // Truyền model vào view
+            // Lấy sản phẩm liên quan: chỉ ảnh chính
+            var relatedProducts = _context.Products
+                .Where(p => p.Id != id &&
+                            (p.CategoryId == computer.CategoryId || p.Manufacturer == computer.Manufacturer))
+                .Select(p => new
+                {
+                    Product = p,
+                    MainImageUrl = p.Images.FirstOrDefault(i => i.IsMain) != null
+                                   ? p.Images.FirstOrDefault(i => i.IsMain).Url
+                                   : "/images/default.png"
+                })
+                .Take(4)
+                .ToList()
+                .Select(x => {
+                    x.Product.Images = new List<Image> { new Image { Url = x.MainImageUrl, IsMain = true } };
+                    return x.Product;
+                })
+                .ToList();
+
+            ViewBag.RelatedProducts = relatedProducts;
+
             return View(computer);
         }
+
     }
 }
