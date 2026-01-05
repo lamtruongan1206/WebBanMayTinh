@@ -147,7 +147,7 @@
                                         Thêm giỏ
                                     </a>
 
-                                    <a asp-controller="Checkout"
+                                    <a asp-controller="Product"
                                        asp-action="BuyNow"
                                        asp-route-productId="@item.Id"
                                        class="btn btn-danger btn-sm">
@@ -182,8 +182,42 @@
         </div>
     </div>
 </div>
+
+<!-- ================= TOAST ADD CART SUCCESS ================= -->
+@if (TempData["AddSuccess"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div id="addCartToast"
+             class="toast align-items-center text-bg-success border-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ✅ @TempData["AddSuccess"]
+                </div>
+                <button type="button"
+                        class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast">
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toastEl = document.getElementById('addCartToast');
+            if (toastEl) {
+                const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+                toast.show();
+            }
+        });
+    </script>
+}
+
 <style>
-    /* FIX BUTTON COLOR */
     .btn-info {
         background-color: #0dcaf0 !important;
         border-color: #0dcaf0 !important;

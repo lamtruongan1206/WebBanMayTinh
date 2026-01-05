@@ -10,191 +10,180 @@ using WebBanMayTinh.Models.Views;
 
 namespace WebBanMayTinh.Controllers
 {
-    [Authorize]
     public class CartController : Controller
     {
-        DataContext conn;
-        UserManager<AppUser> userManager;
-        public CartController(
-            DataContext context,
-            UserManager<AppUser> userManager)
+        private readonly DataContext _context;
+        private readonly UserManager<AppUser> _userManager;
+
+        public CartController(DataContext context, UserManager<AppUser> userManager)
         {
-            this.conn = context;
-            this.userManager = userManager;
+            _context = context;
+            _userManager = userManager;
         }
 
-        // Hàm cập nhật lại session CartCount
-        private void UpdateCartSession(string userId)
+        // ================== UPDATE SESSION CART COUNT ==================
+        private void UpdateCartSession()
         {
-            int count = conn.Carts
-                .Where(c => c.UserId == userId)
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user == null) return;
+
+            int count = _context.Carts
+                .Where(c => c.UserId == user.Id)
                 .Sum(c => c.Quantity ?? 0);
 
             HttpContext.Session.SetInt32("CartCount", count);
         }
 
-        // 1) Thêm sản phẩm vào giỏ
-        public async Task<IActionResult> Add(Guid productId)
+        // ================== ADD PRODUCT ==================
+        public IActionResult Add(Guid productId)
         {
-            var user = await userManager.GetUserAsync(User);
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user == null) return Redirect("/Account/Login");
 
-            if (user == null)
-                return RedirectToAction("Login", "Login"); // nếu ấn vào nút thêm vào giỏ hàng ở trang chưa đăng nhập thì phải vào đăng nhập 
-
-            var item = conn.Carts.FirstOrDefault(
-                c => c.UserId == user.Id && c.ProductId == productId);
-
-            if (item != null)
+            var product = _context.Products.Find(productId);
+            if (product == null || product.Quantity <= 0)
             {
-                item.Quantity += 1;
+                TempData["Error"] = "Sản phẩm đã hết hàng!";
+                return RedirectToAction("Index", "Product");
             }
 
+            var cart = _context.Carts
+                .FirstOrDefault(c => c.UserId == user.Id && c.ProductId == productId);
+
+            if (cart != null)
+            {
+                if (cart.Quantity + 1 > product.Quantity)
+                {
+                    cart.Quantity = product.Quantity;
+                    TempData["Error"] = $"Chỉ còn {product.Quantity} sản phẩm trong kho!";
+                }
+                else
+                {
+                    cart.Quantity += 1;
+                    TempData["AddSuccess"] = "Đã tăng số lượng sản phẩm!";
+                }
+            }
             else
             {
-                conn.Carts.Add(new Cart
+                _context.Carts.Add(new Cart
                 {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
                     ProductId = productId,
                     Quantity = 1,
+                    IsSelected = true,
                     CreateAt = DateOnly.FromDateTime(DateTime.Now)
                 });
+                TempData["AddSuccess"] = "Đã thêm sản phẩm vào giỏ hàng!";
             }
 
-            conn.SaveChanges();
-            // Cập nhật session
-            UpdateCartSession(user.Id);
-
-            TempData["AddSuccess"] = "Đã thêm vào giỏ hàng thành công!";
+            _context.SaveChanges();
+            UpdateCartSession();
             return RedirectToAction("Index", "Product");
         }
 
-        // 2) Hiển thị giỏ hàng
-        public async Task<IActionResult> Index()
+        // ================== VIEW CART ==================
+        public IActionResult Index()
         {
-            var user = await userManager.GetUserAsync(User);
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user == null) return Redirect("/Account/Login");
 
-
-            if (user == null)
-            {
-                return Redirect("/account/login");
-            }
-
-            var userId = user.Id;
-
-            if (string.IsNullOrEmpty(userId))
-                return RedirectToAction("Login", "Login");
-
-            var data = conn.Carts
-                .Where(c => c.UserId == userId)
-                .Select(c => new CartVM
-                {
-                    CartId = c.Id,
-                    ProductId = c.ProductId ?? Guid.Empty,
-                    Name = c.Product.Name,
-                    Price = c.Product.Price ?? 0,
-                    Image = c.Product.Images
-                        .Where(i => i.IsMain)
-                        .Select(i => i.Url)
-                        .FirstOrDefault()
-                        ?? "/images/no-image.png",
-                    Quantity = c.Quantity ?? 1,
-                    Checked = c.IsSelected ?? false,
-                })
+            var carts = _context.Carts
+                .Include(c => c.Product)
+                    .ThenInclude(p => p.Images)
+                .Where(c => c.UserId == user.Id)
                 .ToList();
+
+            var data = carts.Select(c => new CartVM
+            {
+                CartId = c.Id,
+                ProductId = c.ProductId ?? Guid.Empty,
+                Name = c.Product.Name,
+                Price = c.Product.Price ?? 0,
+                Image = c.Product.Images.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/no-image.png",
+                Quantity = c.Quantity ?? 1,
+                Checked = c.IsSelected ?? false
+            }).ToList();
 
             return View(data);
         }
 
-        // 3) Xoá sản phẩm
-        public async Task<IActionResult> Remove(Guid cartId)
+        // ================== REMOVE ==================
+        public IActionResult Remove(Guid cartId)
         {
-            var user = await userManager.GetUserAsync(User);
-            var userId = user.Id;
-            if (userId == null)
-                return RedirectToAction("Login", "Login");
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user == null) return Redirect("/Account/Login");
 
-            var item = conn.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == userId);
-
-            if (item != null)
+            var cart = _context.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == user.Id);
+            if (cart != null)
             {
-                conn.Carts.Remove(item);
-                conn.SaveChanges();
-
-                // Cập nhật lại session
-                UpdateCartSession(userId);
+                _context.Carts.Remove(cart);
+                _context.SaveChanges();
+                UpdateCartSession();
             }
 
             return RedirectToAction("Index");
         }
 
+        // ================== UPDATE QUANTITY (CORE LOGIC) ==================
         [HttpPost]
-        public async Task<IActionResult> UpdateQuantity([FromBody] CartUpdateQuantityVM vm)
+        public IActionResult UpdateQuantity([FromBody] CartUpdateQuantityVM vm)
         {
-            var user = await userManager.GetUserAsync(User);
-            var userId = user.Id;
-            if (userId == null)
-                return RedirectToAction("Login", "Login");
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user == null) return Unauthorized();
 
-            var item = conn.Carts.FirstOrDefault(c => c.Id == vm.CartId);
-            if (item == null) return RedirectToAction("Index");
-
-            if (vm.Quantity <= 0)
-                conn.Carts.Remove(item);
-            else
-                item.Quantity = vm.Quantity;
-
-            conn.SaveChanges();
-            UpdateCartSession(userId);
-
-            return RedirectToAction("Index");
-        }
-
-        public async Task<IActionResult> Select(Guid cartId)
-        {
-            var cart = await conn.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
-
-            if (cart == null)
-            {
-                return NotFound();
-            }
-
-            cart.IsSelected = true;
-
-            conn.SaveChanges();
-
-            return RedirectToAction("Index");
-        }
-
-        private async Task<IEnumerable<Cart>> GetCarts()
-        {
-            var user = await userManager.GetUserAsync(User);
-
-            if (user == null)
-                return Enumerable.Empty<Cart>();
-
-            return conn.Carts.Where(c => c.UserId == user.Id);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleSelect([FromBody] ToggleCartVM model)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var cart = await conn.Carts
-                .FirstOrDefaultAsync(c => c.Id == model.CartId && c.UserId == userId);
+            var cart = _context.Carts
+                .Include(c => c.Product)
+                .FirstOrDefault(c => c.Id == vm.CartId && c.UserId == user.Id);
 
             if (cart == null) return NotFound();
 
-            cart.IsSelected = model.Selected;
-            await conn.SaveChangesAsync();
+            int maxStock = cart.Product.Quantity ?? 0;
+
+            if (vm.Quantity <= 0)
+            {
+                _context.Carts.Remove(cart);
+                _context.SaveChanges();
+                UpdateCartSession();
+                return Json(new { removed = true });
+            }
+
+            if (vm.Quantity > maxStock)
+            {
+                cart.Quantity = maxStock;
+                _context.SaveChanges();
+                UpdateCartSession();
+
+                return Json(new
+                {
+                    success = false,
+                    message = $"Số lượng tối đa còn lại là {maxStock}",
+                    quantity = maxStock
+                });
+            }
+
+            cart.Quantity = vm.Quantity;
+            _context.SaveChanges();
+            UpdateCartSession();
+
+            return Json(new { success = true, quantity = vm.Quantity });
+        }
+
+        // ================== TOGGLE SELECT ==================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ToggleSelect([FromBody] ToggleCartVM vm)
+        {
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user == null) return Unauthorized();
+
+            var cart = _context.Carts.FirstOrDefault(c => c.Id == vm.CartId && c.UserId == user.Id);
+            if (cart == null) return NotFound();
+
+            cart.IsSelected = vm.Selected;
+            _context.SaveChanges();
 
             return Ok();
         }
-
-
-
     }
-
 }

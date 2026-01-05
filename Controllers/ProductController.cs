@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Areas.Admin.Models.Views;
@@ -9,32 +10,36 @@ namespace WebBanMayTinh.Controllers
 {
     public class ProductController : Controller
     {
-        DataContext _context = new DataContext();
+        private readonly DataContext _context;
+        private readonly UserManager<AppUser> _userManager;
+
+        public ProductController(DataContext context, UserManager<AppUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
 
 
         // ================== INDEX ==================
         public IActionResult Index(
-         string? searchName,
-         string? searchManufacturer,
-         decimal? priceFrom,
-         decimal? priceTo,
-         Guid? categoryId,     // lọc theo category
-         int? brandId,         // lọc theo brand
-         int page = 1)
+    string? searchName,
+    string? searchManufacturer,
+    decimal? priceFrom,
+    decimal? priceTo,
+    Guid? categoryId,
+    int? brandId,
+    int page = 1)
         {
             int pageSize = 6;
 
-            // ==============================
-            // 1. Query gốc từ Product
-            // ==============================
+            // 1️⃣ Query gốc (chỉ lấy ảnh chính, AsNoTracking)
             var query = _context.Products
-                .Include(p => p.Category)   // để hiển thị tên Category
-                .Include(p => p.Images)     // để lấy ảnh
+                .AsNoTracking()
+                .Include(p => p.Category)
+                .Include(p => p.Images.Where(i => i.IsMain))
                 .AsQueryable();
 
-            // ==============================
-            // 2. FILTER
-            // ==============================
+            // 2️⃣ Filter
             if (!string.IsNullOrEmpty(searchName))
                 query = query.Where(p => p.Name.Contains(searchName));
 
@@ -53,32 +58,25 @@ namespace WebBanMayTinh.Controllers
             if (brandId.HasValue)
                 query = query.Where(p => p.BrandId == brandId);
 
-            // ==============================
-            // 3. PHÂN TRANG
-            // ==============================
+            // 3️⃣ Phân trang
             int totalItems = query.Count();
             int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
             var products = query
+                .OrderBy(p => p.Name) // bắt buộc order để Skip/Take chính xác
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
-            // ==============================
-            // 4. DATA CHO SIDEBAR
-            // ==============================
-            ViewBag.Categories = _context.Categories.ToList(); // danh mục
-            ViewBag.Brands = _context.Brand.ToList();          // thương hiệu
+            // 4️⃣ Sidebar data
+            ViewBag.Categories = _context.Categories.AsNoTracking().ToList();
+            ViewBag.Brands = _context.Brand.AsNoTracking().ToList();
 
-            // ==============================
-            // 5. LƯU GIÁ TRỊ ĐANG CHỌN
-            // ==============================
+            // 5️⃣ Lưu giá trị filter đang chọn
             ViewBag.SelectedCategory = categoryId;
             ViewBag.SelectedBrand = brandId;
 
-            // ==============================
-            // 6. VIEWBAG CHO FORM + PAGING
-            // ==============================
+            // 6️⃣ ViewBag cho form + paging
             ViewBag.SearchName = searchName;
             ViewBag.SearchManufacturer = searchManufacturer;
             ViewBag.PriceFrom = priceFrom;
@@ -329,6 +327,59 @@ namespace WebBanMayTinh.Controllers
 
             // Truyền model vào view
             return View(computer);
+        }
+
+        public IActionResult BuyNow(Guid productId)
+        {
+            var user = _userManager.GetUserAsync(User).Result;
+            if (user == null)
+                return Redirect("/Account/Login");
+
+            // 1️⃣ Kiểm tra sản phẩm
+            var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+            if (product == null || product.Quantity <= 0)
+            {
+                TempData["Error"] = "Sản phẩm đã hết hàng!";
+                return RedirectToAction("Index", "Product");
+            }
+
+            // 2️⃣ BỎ CHỌN tất cả cart cũ
+            var oldCarts = _context.Carts
+                .Where(c => c.UserId == user.Id);
+
+            foreach (var c in oldCarts)
+                c.IsSelected = false;
+
+            // 3️⃣ Kiểm tra cart đã tồn tại chưa
+            var cart = _context.Carts.FirstOrDefault(c =>
+                c.UserId == user.Id && c.ProductId == productId);
+
+            if (cart != null)
+            {
+                // Đã có → reset số lượng
+                cart.Quantity = 1;
+                cart.IsSelected = true;
+            }
+            else
+            {
+                // Chưa có → tạo mới
+                cart = new Cart
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    ProductId = productId,
+                    Quantity = 1,
+                    IsSelected = true,
+                    CreateAt = DateOnly.FromDateTime(DateTime.Now)
+                };
+
+                _context.Carts.Add(cart);
+            }
+
+            _context.SaveChanges();
+
+            // 4️⃣ Sang trang thanh toán
+            return RedirectToAction("Index", "Checkout");
         }
 
 

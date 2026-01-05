@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBanMayTinh.Models;
 
@@ -11,9 +12,11 @@ using WebBanMayTinh.Models;
 namespace WebBanMayTinh.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class ShopBanMayTinhContextModelSnapshot : ModelSnapshot
+    [Migration("20260105043459_AddIsReceivedToOrder")]
+    partial class AddIsReceivedToOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -439,20 +442,8 @@ namespace WebBanMayTinh.Migrations
                     b.Property<Guid>("AddressId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("CancelReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("CancelRequestedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCancelRequested")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsReceived")
                         .HasColumnType("bit");
@@ -516,33 +507,6 @@ namespace WebBanMayTinh.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.PasswordOtp", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ExpiredAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("OtpHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PasswordOtps");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.Product", b =>
@@ -772,7 +736,7 @@ namespace WebBanMayTinh.Migrations
                         .HasForeignKey("BrandId");
 
                     b.HasOne("WebBanMayTinh.Models.Category", "Category")
-                        .WithMany("Products")
+                        .WithMany("Computers")
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Brand");
@@ -791,7 +755,7 @@ namespace WebBanMayTinh.Migrations
 
             modelBuilder.Entity("WebBanMayTinh.Models.Category", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("Computers");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.Order", b =>

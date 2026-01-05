@@ -1,0 +1,13 @@
+﻿@model WebBanMayTinh.Models.Order
+@using WebBanMayTinh.Models.Enums
+
+<h2>Kết quả thanh toán</h2>
+
+@if (Model.Status == OrderStatus.Confirmed)
+{
+    <p style="color:green">Thanh toán MoMo thành công</p>
+}
+else
+{
+    <p style="color:red">Thanh toán MoMo thất bại</p>
+}

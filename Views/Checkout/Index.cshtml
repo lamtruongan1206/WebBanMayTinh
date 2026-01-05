@@ -1,56 +1,57 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CheckoutVM
 @{
     var cnt = 0;
     var btnDisabled = Model.Address == null || Model.Products.Count == 0;
 }
-@model CheckoutVM
 
 <div class="container min-vh-100 p-2">
 
+    <!-- ĐỊA CHỈ -->
     <div class="card mb-2">
         <div class="card-body">
             <h3>Địa chỉ nhận hàng</h3>
 
             @if (Model.Address == null)
             {
-                <p>Bạn chưa cài đặt địa chỉ giao hàng ! <a asp-controller="Address" asp-action="Create" class="btn-link">Thêm ngay</a> </p>
+                <p>
+                    Bạn chưa có địa chỉ!
+                    <a asp-controller="Address" asp-action="Create">Thêm ngay</a>
+                </p>
             }
             else
             {
-                <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex justify-content-between">
                     <p>
-                        @Model.Address.ReceiverName (@Model.Address.Phone) . @Model.Address.AddressLine , @Model.Address.Ward , @Model.Address.District , @Model.Address.Province
+                        @Model.Address.ReceiverName (@Model.Address.Phone) -
+                        @Model.Address.AddressLine, @Model.Address.Ward,
+                        @Model.Address.District, @Model.Address.Province
                     </p>
-                    <a asp-controller="Checkout" asp-action="ChangeAddress" class="btn-link " style="cursor: pointer">Thay đổi</a>
+                    <a asp-action="ChangeAddress">Thay đổi</a>
                 </div>
             }
-
         </div>
     </div>
-    
 
+    <!-- SẢN PHẨM -->
     <div class="card mb-2">
         <div class="card-body">
             <h3>Sản phẩm</h3>
-
             <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Tên sản phẩm</th>
-                        <th scope="col">Đơn giá</th>
-                        <th scope="col">Số lượng</th>
-                        <th scope="col">Thành tiền</th>
+                        <th>#</th>
+                        <th>Tên</th>
+                        <th>Giá</th>
+                        <th>SL</th>
+                        <th>Thành tiền</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var i in Model.Products)
+                    @foreach (var i in Model.Products)
                     {
-                        cnt += 1;
+                        cnt++;
                         <tr>
-                            <th scope="row">@cnt</th>
+                            <td>@cnt</td>
                             <td>@i.Name</td>
                             <td>@CurrencyExtensions.ToVnd(i.Price)</td>
                             <td>@i.OrderQuantity</td>
@@ -62,45 +63,46 @@
         </div>
     </div>
 
+    <!-- THANH TOÁN -->
     <div class="card">
         <div class="card-body">
             <h3>Phương thức thanh toán</h3>
             <hr />
-            <div class="d-flex justify-content-end flex-column align-items-end">
-                <div class="w-25">
-                    <div class="d-flex justify-content-between">
-                        <p>
-                            Tổng tiền hàng
-                        </p>
-                        <p class="text-black">
-                            @CurrencyExtensions.ToVnd(Model.TotalAmount)
-                        </p>
+
+            <form asp-action="PlaceOrder" method="post">
+                @Html.AntiForgeryToken()
+
+                <!-- PAYMENT METHOD -->
+                <div class="mb-3">
+                    <label class="fw-bold">Chọn phương thức:</label>
+                    <div>
+                        <input type="radio" name="paymentMethod" value="COD" checked />
+                        Thanh toán khi nhận hàng
                     </div>
-                    <div class ="d-flex justify-content-between">
-                        <p>
-                            Tổng tiền vận chuyển
-                        </p>
-                        <p class="text-black">
-                            @CurrencyExtensions.ToVnd(Model.ShippingFee)
-                        </p>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <p>
-                            Thành tiền
-                        </p>
-                        <p class="text-danger fs-4 fw-bold">
-                            @(CurrencyExtensions.ToVnd((int)(Model.TotalAmount + Model.ShippingFee)))
-                        </p>
+                    <div>
+                        <input type="radio" name="paymentMethod" value="MOMO" />
+                        Thanh toán MoMo
                     </div>
                 </div>
-            </div>
-            <hr />
-			<form asp-controller ="Checkout" asp-action="Add" class="text-end">
-                @Html.AntiForgeryToken()
-				<a asp-controller="Cart" asp-action="Index" class="me-3 cur">Quay lại </a>
-                <button type="submit" class="btn btn-primary" disabled="@btnDisabled">Đặt hàng</button>
-            </form>
 
+                <!-- TỔNG TIỀN -->
+                <div class="text-end">
+                    <p>Tiền hàng: <strong>@Model.Subtotal đ</strong></p>
+                    <p>Phí ship: <strong>@Model.ShippingFee đ</strong></p>
+                    <p class="fs-4 text-danger">
+                        Tổng thanh toán: <strong>
+                            @Model.TotalAmount.ToString("N0") đ
+                        </strong>
+                    </p>
+                </div>
+
+                <div class="text-end">
+                    <a asp-controller="Cart" asp-action="Index" class="me-3">Quay lại</a>
+                    <button class="btn btn-primary" disabled="@btnDisabled">
+                        Đặt hàng
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -32,9 +32,10 @@ namespace WebBanMayTinh.Models
         [Display(Name = "Số lượng")]
         public int Quantity { get; set; }
         [Display(Name = "Khách hàng đã nhận")]
-        
-        bool IsReceived = false;
-        DateTime? ReceivedTime;
+
+        public bool IsReceived { get; set; } = false;
+        [Display(Name = "Thời gian nhận hàng")]
+        public DateTime? ReceivedTime { get; set; }
 
         [Required]
         public string UserId { get; set; }

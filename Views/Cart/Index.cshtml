@@ -1,7 +1,22 @@
 ﻿@model List<WebBanMayTinh.Models.DTO.CartVM>
 @{
 }
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+<!-- ================== STYLE ================== -->
 <style>
     .cart-checkbox {
         width: 18px;
@@ -17,229 +32,238 @@
     .qty {
         width: 55px !important;
         display: inline-block;
+        text-align: center;
     }
 </style>
 
-@if (TempData["Success"] != null && TempData["Error"] == null)
+<!-- ================== TOASTIFY ================== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<!-- ================== ALERT ================== -->
+@if (TempData["AddSuccess"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success">@TempData["AddSuccess"]</div>
 }
-@if (TempData["Error"] != null && TempData["Success"] == null)
+@if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-@if (Model.Count == 0)
+<!-- ================== EMPTY CART ================== -->
+@if (!Model.Any())
 {
-    <div class="min-vh-100 text-center" >
-        <h2 class="" style="padding-top: 300px">Không có sản phẩm nào trong giỏ hàng !</h2>
-        <a href="/product" class="mt-4 btn btn-primary">
-            Đến trang sản phẩm
-        </a>
+    <div class="min-vh-100 text-center">
+        <h2 style="padding-top:300px">Không có sản phẩm nào trong giỏ hàng !</h2>
+        <a href="/product" class="btn btn-primary mt-4">Đến trang sản phẩm</a>
     </div>
-
-} else
+}
+else
 {
-<form method="post" asp-action="Index" asp-controller="Checkout">
-    
-    <div class="container my-4" style="min-height: 70vh">
-        <table class="table table-bordered align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th class="checkbox-cell">
-                        <input type="checkbox" id="checkAll" class="cart-checkbox" />
-                    </th>
-                    <th>Ảnh</th>
-                    <th>Sản phẩm</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
-                    <th>Tổng</th>
-                    <th></th>
-                </tr>
-            </thead>
+    <!-- ================== CART FORM (GIỮ NGUYÊN) ================== -->
+    <form method="post" asp-action="Index" asp-controller="Checkout">
+        <div class="container my-4" style="min-height:70vh">
+            <table class="table table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="checkbox-cell">
+                            <input type="checkbox" id="checkAll" class="cart-checkbox" />
+                        </th>
+                        <th>Ảnh</th>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tổng</th>
+                        <th></th>
+                    </tr>
+                </thead>
 
-            <tbody id="cartBody">
-                @for (int i = 0; i < Model.Count(); i++)
-                {
-                    <tr data-id="@Model[i].CartId">
+                <tbody id="cartBody">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <tr data-id="@Model[i].CartId">
+                            <td class="checkbox-cell">
+                                <input type="checkbox"
+                                       class="cart-checkbox chkItem"
+                                       data-id="@Model[i].CartId"
+                                @(Model[i].Checked ? "checked" : "") />
+                            </td>
 
+                            <td>
+                                <img src="@Model[i].Image" width="90" class="rounded border" />
+                            </td>
 
-                        <td class="checkbox-cell">
-                            <input type="checkbox"
-                                   class="cart-checkbox"
-                                   data-id="@Model[i].CartId"
-                                   @(Model[i].Checked ? "checked" : "") />
-                        </td>
+                            <td>@Model[i].Name</td>
 
-                        <td>
-                            <img src="@Model[i].Image" width="90" class="rounded border" />
-                        </td>
+                            <td class="price" data-price="@Model[i].Price">
+                                @String.Format("{0:N0} ₫", Model[i].Price)
+                            </td>
 
-                        <td>@Model[i].Name</td>
+                            <td width="230">
+                                <button type="button"
+                                        data-id="@Model[i].CartId"
+                                        class="btn btn-sm btn-primary btnMinus">
+                                    −
+                                </button>
 
-                        <td class="price" data-price="@Model[i].Price">
-                            @String.Format("{0:N0} ₫", @Model[i].Price)
-                        </td>
-
-                        <td width="230">
-                                <button type="button" data-id="@Model[i].CartId" class="btn btn-sm btn-primary btnMinus">−</button>
-
-                            <input type="text"
-                                   class="qty form-control text-center"
+                                <input type="text"
+                                       class="qty form-control"
                                        data-id="@Model[i].CartId"
                                        value="@Model[i].Quantity" />
 
-                                <button type="button" data-id="@Model[i].CartId" class="btn btn-sm btn-primary btnPlus">+</button>
-                        </td>
+                                <button type="button"
+                                        data-id="@Model[i].CartId"
+                                        class="btn btn-sm btn-primary btnPlus">
+                                    +
+                                </button>
+                            </td>
 
-                        <td class="subTotal fw-bold text-danger">
-                            @String.Format("{0:N0} ₫", Model[i].Price * Model[i].Quantity)
-                            <input type="hidden" asp-for="@Model[i].Quantity"/>
-                        </td>
+                            <td class="subTotal fw-bold text-danger">
+                                @String.Format("{0:N0} ₫", Model[i].Price * Model[i].Quantity)
+                            </td>
 
-                        <td>
-                            <a asp-action="Remove" asp-route-cartId="@Model[i].CartId"
-                               class="btn btn-danger btn-sm">Xóa</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
+                            <td>
+                                <a asp-action="Remove"
+                                   asp-route-cartId="@Model[i].CartId"
+                                   class="btn btn-danger btn-sm">Xóa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-        </table>
+        <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
+            <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">⬅ Quay lại</a>
 
-    </div>
-    <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
-        <a href="/User/Index" class="btn btn-secondary">
-            ⬅ Quay lại
-        </a>
+            <h4 class="m-0">
+                Tổng tiền:
+                <span id="totalPrice" class="text-danger fw-bold">0 ₫</span>
+            </h4>
 
-        <h4 class="m-0">
-            Tổng tiền:
-            <span id="totalPrice" class="text-danger fw-bold">0 ₫</span>
-        </h4>
-
-        <a asp-action="Index" asp-controller="Checkout" class="btn btn-primary">Mua hàng</a>
-    </div>
-</form>
+            <a asp-action="Index" asp-controller="Checkout" class="btn btn-primary">
+                Mua hàng
+            </a>
+        </div>
+    </form>
 }
 
-
+<!-- ================== SCRIPT ================== -->
 @section Scripts {
     <script>
-
-        function formatMoney(num) {
-            return num.toLocaleString("vi-VN") + " ₫";
+        function formatMoney(n){
+            return n.toLocaleString("vi-VN") + " ₫";
         }
 
-        function updateRowTotal(row) {
+        function updateRow(row){
             let price = parseInt(row.querySelector(".price").dataset.price);
-            let qty = parseInt(row.querySelector(".qty").value);
+            let qty   = parseInt(row.querySelector(".qty").value);
             row.querySelector(".subTotal").innerText = formatMoney(price * qty);
         }
-
-        function updateTotal() {
-            let total = 0;
-
-            document.querySelectorAll(".chkItem:checked").forEach(chk => {
-                let row = chk.closest("tr");
-                let price = parseInt(row.querySelector(".price").dataset.price);
-                let qty = parseInt(row.querySelector(".qty").value);
-                total += price * qty;
+                function toggleSelect(cartId, selected){
+            fetch("/Cart/ToggleSelect", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken":
+                        document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    cartId: cartId,
+                    selected: selected
+                })
             });
+        }
 
+        function updateTotal(){
+            let total = 0;
+            document.querySelectorAll(".chkItem:checked").forEach(c=>{
+                let r = c.closest("tr");
+                total += parseInt(r.querySelector(".price").dataset.price)
+                       * parseInt(r.querySelector(".qty").value);
+            });
             document.getElementById("totalPrice").innerText = formatMoney(total);
         }
 
-        // Chọn tất cả
-        document.getElementById("checkAll").addEventListener("change", function () {
-            document.querySelectorAll(".chkItem").forEach(c => c.checked = this.checked);
-            updateTotal();
-        });
+        function showError(msg){
+            Toastify({
+                text: msg,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#dc3545",
+                close: true
+            }).showToast();
+        }
 
-        // Chọn từng cái
-        document.querySelectorAll(".chkItem").forEach(chk => {
-            chk.addEventListener("change", updateTotal);
-        });
+        function sendUpdate(btn, qty){
+            let row = btn.closest("tr");
+            let box = row.querySelector(".qty");
 
-        
-        // Nút giảm
-        document.querySelectorAll(".btnMinus").forEach(btn => {
-            btn.addEventListener("click", function () {
-                let row = this.closest("tr");
-                let qtyBox = row.querySelector(".qty");
-
-                let qty = Math.max(1, parseInt(qtyBox.value) - 1);
-                qtyBox.value = qty;
-
-                fetch("/Cart/UpdateQuantity", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "RequestVerificationToken":
-                            document.querySelector('input[name="__RequestVerificationToken"]').value
-                    },
-                    body: JSON.stringify({
-                        cartId: this.dataset.id,
-                        quantity: qty
-                    })
+            fetch("/Cart/UpdateQuantity", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken":
+                        document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    cartId: btn.dataset.id,
+                    quantity: qty
                 })
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.removed) {
+                    location.reload();
+                    return;
+                }
 
-                updateRowTotal(row);
+                if (!d.success) {
+                    showError(d.message);   // ✅ thông báo đẹp
+                }
+
+                box.value = d.quantity;     // ✅ tự về tồn kho max
+                updateRow(row);
                 updateTotal();
             });
+        }
+
+        document.querySelectorAll(".btnPlus").forEach(b => {
+            b.onclick = () => {
+                let box = b.closest("tr").querySelector(".qty");
+                sendUpdate(b, parseInt(box.value) + 1);
+            };
         });
 
-        // Nút tăng
-        document.querySelectorAll(".btnPlus").forEach(btn => {
-            btn.addEventListener("click", function () {
-                let row = this.closest("tr");
-                let qtyBox = row.querySelector(".qty");
-
-                qtyBox.value = parseInt(qtyBox.value) + 1;
-
-                fetch("/Cart/UpdateQuantity", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "RequestVerificationToken":
-                            document.querySelector('input[name="__RequestVerificationToken"]').value
-                    },
-                    body: JSON.stringify({
-                        cartId: this.dataset.id,
-                        quantity: qtyBox.value
-                    })
-                })
-
-                updateRowTotal(row);
-                updateTotal();
-            });
+        document.querySelectorAll(".btnMinus").forEach(b => {
+            b.onclick = () => {
+                let box = b.closest("tr").querySelector(".qty");
+                sendUpdate(b, parseInt(box.value) - 1);
+            };
         });
 
-        // Nhập thủ công
         document.querySelectorAll(".qty").forEach(q => {
-            q.addEventListener("input", function () {
-                if (this.value < 1 || isNaN(this.value)) this.value = 1;
-                updateRowTotal(this.closest("tr"));
+            q.onchange = () => sendUpdate(q, parseInt(q.value));
+        });
+
+                document.querySelectorAll(".chkItem").forEach(c => {
+            c.onchange = function () {
+                toggleSelect(this.dataset.id, this.checked);
                 updateTotal();
-            });
+            };
         });
 
-                document.querySelectorAll(".cart-checkbox").forEach(cb => {
-            cb.addEventListener("change", function () {
-                fetch("/Cart/ToggleSelect", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "RequestVerificationToken":
-                            document.querySelector('input[name="__RequestVerificationToken"]').value
-                    },
-                    body: JSON.stringify({
-                        cartId: this.dataset.id,
-                        selected: this.checked
-                    })
-                });
-            });
-        });
 
+              document.getElementById("checkAll").onchange = function(){
+            document.querySelectorAll(".chkItem").forEach(c => {
+                c.checked = this.checked;
+                toggleSelect(c.dataset.id, this.checked);
+            });
+            updateTotal();
+        };
+
+
+        updateTotal();
     </script>
 }
