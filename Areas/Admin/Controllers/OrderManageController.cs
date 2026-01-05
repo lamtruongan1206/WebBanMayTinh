@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Areas.Admin.Models.Views;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
+using WebBanMayTinh.Utils;
 
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.OrderAccess)]
     public class OrderManageController : Controller
     {
         private readonly DataContext _context;
@@ -28,20 +32,76 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             .Select(s => new
             {
                 Id = (int)s,
-                Name = s.ToString()
+                Name = OrderStatusExtensions.ToVietNamText(s)
             })
             .ToList();
             ViewBag.OrderStatus = new SelectList(list, "Id", "Name");
         }
 
-        // GET: Admin/OrderManage
-        public async Task<IActionResult> Index()
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderRead)]
+        public async Task<IActionResult> Index(
+            int? Status,
+            DateTime? FromDate,
+            DateTime? ToDate,
+            string? UserName,
+            decimal? TotalFrom,
+            decimal? TotalTo,
+            int page = 1,
+            int pageSize = 4)
         {
-            var dataContext = _context.Orders.Include(o => o.Address).Include(o => o.User).OrderByDescending(o => o.CreatedAt);
-            return View(await dataContext.ToListAsync());
+            IQueryable<Order> query = _context.Orders
+                .Include(o => o.Address)
+                .Include(o => o.User);
+
+
+            if (Status.HasValue)
+            {
+                query = query.Where(o => (int)o.Status == Status.Value);
+            }
+
+            if (FromDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt >= FromDate.Value);
+            }
+
+            if (ToDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt <= ToDate.Value.AddDays(1));
+            }
+
+            if (!string.IsNullOrWhiteSpace(UserName))
+            {
+                query = query.Where(o =>
+                    o.User.UserName.Contains(UserName) ||
+                    o.User.Email.Contains(UserName));
+            }
+
+            if (TotalFrom.HasValue)
+            {
+                query = query.Where(o => o.TotalAmount >= TotalFrom.Value);
+            }
+
+            if (TotalTo.HasValue)
+            {
+                query = query.Where(o => o.TotalAmount <= TotalTo.Value);
+            }
+
+
+            var pagedOrders = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .ToPagedResultAsync(page, pageSize);
+
+            ViewBag.StatusFrom = Status;
+            ViewBag.FromDate = FromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = ToDate?.ToString("yyyy-MM-dd");
+            ViewBag.UserName = UserName;
+            ViewBag.TotalFrom = TotalFrom;
+            ViewBag.TotalTo = TotalTo;
+
+            return View(pagedOrders);
         }
 
-        // GET: Admin/OrderManage/Details/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderRead)]
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -52,6 +112,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             var order = await _context.Orders
                 .Include(o => o.Address)
                 .Include(o => o.User)
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (order == null)
             {
@@ -61,7 +122,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(order);
         }
 
-        // GET: Admin/OrderManage/Create
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderCreate)]
         public IActionResult Create()
         {
             InitViewBagStatus();
@@ -70,11 +131,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View();
         }
 
-        // POST: Admin/OrderManage/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderCreate)]
         public async Task<IActionResult> Create(Order order)
         {
             InitViewBagStatus();
@@ -90,7 +149,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(order);
         }
 
-        // GET: Admin/OrderManage/Edit/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderUpdate)]
         public async Task<IActionResult> Edit(Guid? id)
         {
 
@@ -115,11 +174,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             });
         }
 
-        // POST: Admin/OrderManage/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderUpdate)]
         public async Task<IActionResult> Edit(Guid id, OrderEditVM vm)
         {
             InitViewBagStatus();
@@ -133,7 +190,12 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                 try
                 {
                     var order = _context.Orders.Find(id);
+
+                    if (order is null) return NotFound("Không tìm thấy đơn hàng này");
+
                     order.Status = vm.Status;
+                    order.UpdatedAt = DateTime.Now;
+
                     _context.Update(order);
                     await _context.SaveChangesAsync();
                 }
@@ -153,7 +215,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(vm);
         }
 
-        // GET: Admin/OrderManage/Delete/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderDelete)]
         public async Task<IActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -164,6 +226,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             var order = await _context.Orders
                 .Include(o => o.Address)
                 .Include(o => o.User)
+                .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (order == null)
             {
@@ -173,8 +236,8 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(order);
         }
 
-        // POST: Admin/OrderManage/Delete/5
         [HttpPost, ActionName("Delete")]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderDelete)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
@@ -187,6 +250,41 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderUpdate)]
+        public async Task<IActionResult> ConfirmCancelRequest(Guid id)
+        {
+            try
+            {
+                var order = await _context.Orders.FindAsync(id);
+                if (order is null)
+                {
+                    return NotFound("Không tìm thấy đơn hàng");
+                }
+                else if (order.CancelledAt != null || order.Status == OrderStatus.Cancelled)
+                {
+                    TempData["Error"] = "Đơn hàng đã được hủy trước đó rồi";
+                    return RedirectToAction("Index");
+                }
+
+                order.UpdatedAt = DateTime.Now;
+                order.CancelledAt = DateTime.Now;
+                order.Status = OrderStatus.Cancelled;
+
+                TempData["Success"] = "Hủy đơn hàng thành công";
+
+                _context.Update(order);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Hủy đơn hàng không thành công";
+            }
+            return RedirectToAction("Index");
+        }
+
 
         private bool OrderExists(Guid id)
         {

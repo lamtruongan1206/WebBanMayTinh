@@ -22,6 +22,7 @@ namespace WebBanMayTinh.Services
         Task<bool> ChangePassword(string newPassword, string otp);
         Task<string> GeneratePasswordResetTokenAsync(string email);
         Task<IdentityResult> ResetPasswordAsync(ResetPasswordVM resetPasswordVM);
+        Task<AppUser?> GetCurrentUser();
         void Logout();
     }
 }

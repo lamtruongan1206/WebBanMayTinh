@@ -17,6 +17,7 @@ using WebBanMayTinh.Utils;
 
 namespace WebBanMayTinh.Controllers
 {
+    //[Authorize]
     public class AccountController : Controller
     {
         private readonly DataContext context;
@@ -35,10 +36,9 @@ namespace WebBanMayTinh.Controllers
             this.emailSender = emailSender;
         }
         // GET: AccountController
-        [HttpGet]
+        [HttpGet, Authorize]
         public ActionResult Profile(string? name = "")
         {
-            //var user = context.Users.FirstOrDefault(x => x.Username == name || x.Email == name);
             var user = context.Users.FirstOrDefault(x => x.UserName == name || x.Email == name);
             if (!User.Identity.IsAuthenticated || user == null)
             {
@@ -49,7 +49,7 @@ namespace WebBanMayTinh.Controllers
 
 
       
-        [HttpPost]
+        [HttpPost, Authorize]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> UpdateProfile (AppUser user, IFormFile? avatar)
         {
@@ -211,7 +211,7 @@ namespace WebBanMayTinh.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost, Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult Logout()
         {
@@ -226,7 +226,7 @@ namespace WebBanMayTinh.Controllers
         }
 
         // POST: AccountController/Edit/5
-        [HttpPost]
+        [HttpPost, Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
         {
@@ -241,25 +241,25 @@ namespace WebBanMayTinh.Controllers
         }
 
         // GET: AccountController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+        //public ActionResult Delete(int id)
+        //{
+        //    return View();
+        //}
 
-        // POST: AccountController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+        //// POST: AccountController/Delete/5
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public ActionResult Delete(int id, IFormCollection collection)
+        //{
+        //    try
+        //    {
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    catch
+        //    {
+        //        return View();
+        //    }
+        //}
         public async Task<IActionResult> ForgotPassword()
         {
             return View();
@@ -433,7 +433,7 @@ namespace WebBanMayTinh.Controllers
                 await userService.AddUser(user, "ComputerShop123");
             }
 
-            await userService.Login(email, "ComputerShop123");
+            await userService.LoginWithGoogle(email);
 
             var claims = result.Principal.Identities.FirstOrDefault().Claims.Select(claim => new
             {

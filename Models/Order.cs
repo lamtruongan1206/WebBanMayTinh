@@ -46,6 +46,21 @@ namespace WebBanMayTinh.Models
         [ForeignKey("AddressId"), Display(Name = "Địa chỉ")]
         public Address Address { get; set; }
 
+        // Chức năng yêu cầu hủy đơn hàng
+        [Display(Name = "Yêu cầu hủy")]
+        public bool IsCancelRequested { get; set; } = false;
+
+        [Display(Name = "Lý do hủy")]
+        public string? CancelReason { get; set; }
+
+        [Display(Name = "Thời gian yêu cầu hủy")]
+        public DateTime? CancelRequestedAt { get; set; }
+
+        [Display(Name = "Thời gian hủy")]
+        public DateTime? CancelledAt { get; set; }
+
         public List<OrderItems> OrderItems { get; set; }
+
+        
     }
 }

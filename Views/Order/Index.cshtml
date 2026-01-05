@@ -5,6 +5,15 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@if (TempData["Success"] != null && TempData["Error"] == null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null && TempData["Success"] == null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
 <h2 class="mt-4 text-center">Đơn hàng</h2>
 
 <div class="container mx-auto my-4 min-vh-100">
@@ -30,7 +39,7 @@
                                     @OrderStatusExtensions.ToVietNamText(order.OrderStatus)
                                 </b>
                             </p>
-                            <p>Giá: <b> @item.Price</b></p>
+                            <p>Giá: <b>@CurrencyExtensions.ToVnd(@item.Price)</b></p>
                         </div>
                     </div>
 
@@ -41,20 +50,47 @@
                     @if (order.OrderStatus == OrderStatus.Completed)
                     {
                         <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
-                            Đánh giá
+                            Đánh giá sản phẩm
                         </a>
-                        <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
-                            Xác nhận đã nhận đơn
-                        </a>
+                        
                     }
 
-                    @if (order.OrderStatus < OrderStatus.Shipping)
+                    @if (order.OrderStatus == OrderStatus.Shipping)
                     {
-                        <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                        <form asp-action="ConfirmReceived" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@order.Id" />
+
+                            <button type="submit"
+                                    class="btn-link p-0" 
+                                    style="border: none; background: white"
+                                    onclick="return confirm('Xác nhận bạn đã nhận đơn hàng?');">
+                                Xác nhận đã nhận đơn
+                            </button>
+                        </form>
+                    }
+
+                    @if (order.OrderStatus < OrderStatus.Shipping && !order.IsCancelRequested)
+                    {
+                        <a asp-action="CancelOrderRequest" asp-route-orderId="@order.Id" class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
                             Yêu cầu hủy đơn
                         </a>
                     }
-                    <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                    else if (order.OrderStatus == OrderStatus.Cancelled)
+                    {
+                        <a class="text-success">
+                            Đơn hàng của bạn đã được hủy.
+                        </a>
+                    }
+                    else if (order.IsCancelRequested)
+                    {
+                        <a class="text-danger">
+                            Yêu cầu hủy đơn của bạn đã được gửi, vui lòng đợi phản hồi từ người bán
+                        </a>
+                    }
+                    
+
+                    <a asp-action="Details" asp-route-id="@order.Id" class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
                         Chi tiết
                     </a>
                 </div>

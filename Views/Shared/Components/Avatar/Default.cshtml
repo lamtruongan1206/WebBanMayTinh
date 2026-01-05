@@ -40,16 +40,10 @@
                 <a class="dropdown-item" asp-action="Index" asp-controller="Order">Đơn hàng</a>
             </li>
 
-            @* <li class="mr-0">
-                <a class="dropdown-item" asp-action="Index" asp-controller="Address">Địa chỉ</a>
-            </li> *@
+            <li class="mr-0" permission="@WebBanMayTinh.Authorization.Permissions.AdminView">
+                <a class="dropdown-item" asp-action="Index" asp-controller="Admin" asp-route-name="@User.Identity.Name">Quản trị</a>
+            </li>
 
-            @if (Model.Role.Equals("Admin") || Model.Role.Equals("Employee"))
-            {
-                <li class="mr-0">
-                    <a class="dropdown-item" asp-action="Index" asp-controller="Admin" asp-route-name="@User.Identity.Name">Quản trị</a>
-                    </li>
-            }
             <li><hr class="dropdown-divider"></li>
             <li>
                 <form asp-action="Logout" asp-controller="Account">

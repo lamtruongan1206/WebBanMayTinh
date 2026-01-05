@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Remove="Views\Error403.cshtml" />
+    <Content Remove="wwwroot\furni-1.0.0\images\hero-img.png" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using WebBanMayTinh.Models.Views;
 
 namespace WebBanMayTinh.Controllers
 {
+    [Authorize]
     public class CheckoutController : Controller
     {
         private DataContext dataContext;

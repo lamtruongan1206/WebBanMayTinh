@@ -30,5 +30,10 @@ namespace WebBanMayTinh.Models
 
         public string? UserId { get; set; }
         public AppUser? User { get; set; }
+
+        public string GetAddressDetail()
+        {
+            return string.Join(", ", [this.AddressLine, this.Ward, this.District, this.Province]);
+        }
     }
 }

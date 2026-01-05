@@ -19,6 +19,7 @@ namespace WebBanMayTinh.Services
 
         private UserManager<AppUser> userManager;
         private SignInManager<AppUser> signInManager;
+        private RoleManager<IdentityRole> roleManager;
         private IHttpContextAccessor httpContextAccessor;
 
 
@@ -26,6 +27,7 @@ namespace WebBanMayTinh.Services
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             IEmailSender emailSender,
+            RoleManager<IdentityRole> roleManager,
             IHttpContextAccessor httpContextAccessor) 
         {
             this.context = context;
@@ -34,6 +36,7 @@ namespace WebBanMayTinh.Services
             this.signInManager = signInManager;
             this.emailSender = emailSender;
             this.httpContextAccessor = httpContextAccessor;
+            this.roleManager = roleManager;
         }
 
         public async Task<IEnumerable<AppUser>> GetUsers()
@@ -92,6 +95,9 @@ namespace WebBanMayTinh.Services
 
             var result = await userManager.CreateAsync(user, password);
 
+            var roleMember = await roleManager.FindByNameAsync("Member");
+            await userManager.AddToRoleAsync(user, roleMember.ToString());
+
             return result;
         }
 
@@ -102,7 +108,11 @@ namespace WebBanMayTinh.Services
                 var result = await userManager.CreateAsync(user, password);
 
                 if (result.Succeeded)
+                {
+                    var roleMember = await roleManager.FindByNameAsync("Member");
+                    await userManager.AddToRoleAsync(user, roleMember.ToString());
                     return true;
+                }
                 else
                 {
                     logger.LogError("Tạo mới không thành công");

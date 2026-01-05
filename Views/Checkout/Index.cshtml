@@ -52,9 +52,9 @@
                         <tr>
                             <th scope="row">@cnt</th>
                             <td>@i.Name</td>
-                            <td>@i.Price</td>
+                            <td>@CurrencyExtensions.ToVnd(i.Price)</td>
                             <td>@i.OrderQuantity</td>
-                            <td>@(i.Price* i.OrderQuantity)</td>
+                            <td>@(CurrencyExtensions.ToVnd(i.Price * i.OrderQuantity))</td>
                         </tr>
                     }
                 </tbody>
@@ -73,7 +73,7 @@
                             Tổng tiền hàng
                         </p>
                         <p class="text-black">
-                            @Model.TotalAmount đ
+                            @CurrencyExtensions.ToVnd(Model.TotalAmount)
                         </p>
                     </div>
                     <div class ="d-flex justify-content-between">
@@ -81,7 +81,7 @@
                             Tổng tiền vận chuyển
                         </p>
                         <p class="text-black">
-                            @Model.ShippingFee đ
+                            @CurrencyExtensions.ToVnd(Model.ShippingFee)
                         </p>
                     </div>
                     <div class="d-flex justify-content-between">
@@ -89,7 +89,7 @@
                             Thành tiền
                         </p>
                         <p class="text-danger fs-4 fw-bold">
-                            @(((int)(Model.TotalAmount + Model.ShippingFee))) đ
+                            @(CurrencyExtensions.ToVnd((int)(Model.TotalAmount + Model.ShippingFee)))
                         </p>
                     </div>
                 </div>

@@ -3,68 +3,83 @@
 @{
     ViewData["Title"] = "Delete";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    decimal subTotal = 0;
+    foreach (var i in Model.OrderItems)
+    {
+        subTotal = subTotal + i.Price * i.Quantity;
+    }
 }
 
-<h1>Delete</h1>
+<h1>Xóa đơn hàng</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Khi xóa không thể hoàn lại, bạn có chắc muốn xóa không?</h3>
 <div>
-    <h4>Order</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CreatedAt)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.CreatedAt)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.UpdatedAt)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.UpdatedAt)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Status)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
+        <dd class="col-sm-10 @OrderStatusExtensions.ToTextColor(Model.Status)">
+            @OrderStatusExtensions.ToVietNamText(Model.Status)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Subtotal)
+            @* @CurrencyExtensions.ToVnd(Model.Subtotal) *@
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Subtotal)
+        <dd class="col-sm-10">
+            @CurrencyExtensions.ToVnd(subTotal)
+
+            @* @Html.DisplayFor(model => model.Subtotal) *@
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ShippingFee)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ShippingFee)
+        <dd class="col-sm-10">
+            @* @Html.DisplayFor(model => model.ShippingFee) *@
+            @CurrencyExtensions.ToVnd(Model.ShippingFee)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.TotalAmount)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalAmount)
+        <dd class="col-sm-10">
+            @* @Html.DisplayFor(model => model.TotalAmount) *@
+            @CurrencyExtensions.ToVnd(subTotal + Model.ShippingFee)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.User)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Id)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.User.UserName)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
+            Người nhận
+        </dt>
+        <dd class="col-sm-10">
+            @(Model.Address.ReceiverName + " (" + Model.Address.Phone))
+        </dd>
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Address)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address.AddressLine)
+        <dd class="col-sm-10">
+            @(Model.Address.GetAddressDetail())
         </dd>
     </dl>
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Xóa" class="btn btn-danger" /> |
+        <a asp-action="Index">Quay lại</a>
     </form>
 </div>

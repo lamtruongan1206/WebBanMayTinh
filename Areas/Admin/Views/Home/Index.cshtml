@@ -1,12 +1,175 @@
-﻿@using WebBanMayTinh.Models
-@model IEnumerable<Product>
-
+﻿@model DashboardVM
 @{
-    ViewData["Title"] = "Bảng điều khiển";
+    ViewData["Title"] = "Dashboard";
+    Layout = "/Areas/Admin/Views/Shared/_Layout.cshtml";
 }
 
-<h1 class="text-center">Chưa phát triển</h1>
+<div class="container-fluid py-4">
 
-<div class="text-center">
-    <img class="text-center mt-4" src="https://th.bing.com/th/id/OIP.qsjlwSecYQ95NEgFRyk3mgHaEK?w=394&h=187&c=7&r=0&o=7&dpr=2&pid=1.7&rm=3" />
+    <!-- KPI -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow border-left-primary">
+                <div class="card-body">
+                    <div class="text-xs text-uppercase font-weight-bold text-primary">
+                        Doanh thu tháng
+                    </div>
+                    <div class="h5 font-weight-bold">
+                        @Model.RevenueThisMonth.ToString("N0") ₫
+                    </div>
+                    <small class="text-muted">
+                        @(Model.RevenueGrowthPercent >= 0 ? "▲" : "▼")
+                        @Model.RevenueGrowthPercent %
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-left-success">
+                <div class="card-body">
+                    <h4 class="text-xs text-uppercase font-weight-bold text-success">
+                        Đơn hàng
+                    </h4>
+                    <div class="h5 font-weight-bold">@Model.TotalOrders</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-left-info">
+                <div class="card-body">
+                    <h4 class="text-xs text-uppercase font-weight-bold text-info">
+                        Người dùng
+                    </h4>
+                    <div class="h5 font-weight-bold">@Model.TotalUsers</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-left-warning">
+                <div class="card-body">
+                    <h4 class="text-xs text-uppercase font-weight-bold text-warning">
+                        Sản phẩm
+                    </h4>
+                    <div class="h5 font-weight-bold">@Model.TotalProducts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <h4 class="card-header font-weight-bold">
+                    Doanh thu 6 tháng gần nhất
+                </h4>
+                <div class="card-body">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <h4 class="card-header font-weight-bold">
+                    Cơ cấu sản phẩm
+                </h4>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4 p-2">
+                <h4 class="card-header font-weight-bold">
+                    Đơn hàng mới
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                @* <th>#</th> *@
+                                <th>Khách</th>
+                                <th>Tổng</th>
+                                <th>Ngày</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model.RecentOrders)
+                            {
+                                <tr>
+                                    @* <td>#@o.Id</td> *@
+                                    <td>@o.User.UserName</td>
+                                    <td>@o.TotalAmount.ToString("N0") ₫</td>
+                                    <td>@o.CreatedAt.ToString("dd/MM")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4 border-left-danger">
+                <h4 class="card-header font-weight-bold text-danger">
+                    Sắp hết hàng
+                </h4>
+                <ul class="list-group list-group-flush">
+                    @foreach (var p in Model.LowStockProducts)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            @p.Name
+                            <span class="badge badge-danger">
+                                Còn @p.Quantity
+                            </span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(Json.Serialize(Model.MonthlyLabels)),
+            datasets: [{
+                data: @Html.Raw(Json.Serialize(Model.MonthlyRevenue)),
+                borderColor: '#4e73df',
+                fill: true,
+                backgroundColor: 'rgba(78,115,223,0.05)'
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: v => v.toLocaleString() + ' ₫'
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: @Html.Raw(Json.Serialize(Model.CategoryNames)),
+            datasets: [{
+                data: @Html.Raw(Json.Serialize(Model.ProductCountByCategory)),
+            }]
+        }
+    });
+</script>

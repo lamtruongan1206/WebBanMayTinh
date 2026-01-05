@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Services;
 using WebBanMayTinh.Utils;
-using DotNetEnv;
 
 Env.Load();
 
@@ -23,7 +25,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddHttpContextAccessor();
 // Add services to the container.
 
 builder.Services.AddScoped<IUserService, UserService>();
@@ -39,7 +40,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Login";
+    options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Error/403";
 });
 
@@ -50,6 +51,18 @@ builder.Services.AddAuthentication()
         options.ClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
         options.CallbackPath = "/signin-google";
     });
+
+
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy(Permissions.UserRead, policy =>
+//    policy.RequirePermission(Permissions.UserRead));
+//    options.AddPolicy(Permissions.RoleAccess, policy =>
+//    policy.RequirePermission(Permissions.RoleAccess));
+//});
+
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -76,7 +89,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -90,6 +102,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Data seed
+await app.SeedAdminAsync();
+await app.SeedRolesPermissionsAsync();
+await app.ApplyMigrationsAsync();
+await app.SeedPermissionsAsync();
+
 app.MapControllerRoute(
       name: "areas",
       pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
@@ -98,11 +116,5 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-using (var scope = app.Services.CreateScope())
-{
-    var service = scope.ServiceProvider; 
-    await DataSeed.SeedAdminAsync(service);
-}
 
 app.Run();

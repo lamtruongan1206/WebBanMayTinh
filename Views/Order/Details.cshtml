@@ -1,67 +1,131 @@
-﻿@model WebBanMayTinh.Models.Order
+﻿@model WebBanMayTinh.Models.Views.OrderDetailVM
 
 @{
     ViewData["Title"] = "Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Details</h1>
+<h2 class="text-center mt-4 mb-4">Chi tiết đơn hàng</h2>
 
-<div>
-    <h4>Order</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UpdatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UpdatedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Subtotal)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Subtotal)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ShippingFee)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ShippingFee)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalAmount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalAmount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.User)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address.AddressLine)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="container mx-auto d-flex gap-4 justify-content-between">
+    
+    <div class="w-100">
+        <div class="card mb-4">
+            <div class="card-body">
+                <p><b>Đơn hàng: </b> @Model.Id</p>
+                <p><b>Thời gian: </b> @Model.CreatedAt</p>
+				<p><b>Trạng thái đơn hàng: </b> <span class="@OrderStatusExtensions.ToTextColor(Model.Status)">@OrderStatusExtensions.ToVietNamText(@Model.Status)</span></p>
+                <p><b>Thời gian cập nhật: </b> @Model.UpdatedAt</p>
+            </div>
+        </div>
+
+        <div class="d-flex gap-4 mb-4">
+            <div class="card w-100">
+                <div class="card-body">
+                    <h5>KHÁCH HÀNG</h5>
+                    <hr />
+                    <p>
+                        <b>@string.Join(" ", [Model.User.FirstName, Model.User.LastName]) </b>
+                    </p>
+                    <p>@Model.User.Email</p>
+                </div>
+            </div>
+
+                <div class="card w-100">
+                    <div class="card-body">
+                        <h5>NGƯỜI NHẬN</h5>
+                        <hr />
+                        <p>
+                            <b>
+                                @Model.Address.ReceiverName
+                            </b>
+                        </p>
+                        <p>@Model.Address.Phone</p>
+                        <p>@string.Join(", ", [Model.Address.AddressLine, Model.Address.Ward, Model.Address.District, Model.Address.Province])</p>
+                    </div>
+                </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Tên sản phẩm</th>
+                            <th scope="col">Số lượng</th>
+                            <th scope="col">Đơn giá</th>
+                            <th scope="col">Tổng tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Items.Count(); i++)
+                        {
+                            <tr>
+                                <th scope="row">@(i + 1)</th>
+                                <td>@Model.Items[i].ProductName</td>
+                                <td>@Model.Items[i].Quantity</td>
+                                <td>@CurrencyExtensions.ToVnd(@Model.Items[i].Price)</td>
+                                <td>@CurrencyExtensions.ToVnd(Model.Items[i].Quantity * Model.Items[i].Price)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-75 d-flex flex-column justify-content-between">
+        <div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="">PHƯƠNG THỨC THANH TOÁN</h5>
+                    <hr />
+                    <p>Tiền mặt: </p>
+                    <p>Chuyển khoản MOMO: </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <p class="d-flex justify-content-between">
+                        <span>Tạm tính</span>
+                        <span>16.000.000đ</span>
+                    </p>
+                    <p class="d-flex justify-content-between">
+                        <span>Khuyến mãi</span>
+                        <span>30.000đ</span>
+                    </p>
+                    <p class="d-flex justify-content-between">
+                        <span>Phí vận chuyển</span>
+                        <span>50.000đ</span>
+                    </p>
+                    <p class="d-flex justify-content-between">
+                        <span>Mã giảm giá</span>
+                        <span>50.000đ</span>
+                    </p>
+                    <p class="d-flex justify-content-between">
+                        <span>Thành tiền</span>
+                        <span>50.000đ</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="mt-auto mb-4 w-100">
+            <div class="">
+                @* <div class="d-flex gap-2 w-100 mb-2" role="group">
+                    <a type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Ghi chú</a>
+                    <a type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Sửa đơn</a>
+                    <button disabled type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Hủy đơn</button>
+                </div> *@
+                <a asp-controller="Order" asp-action="Index" type="button" class="btn w-100" style="border-radius: 0px; color: #fff; border: solid 1px #333; background: red; ">Đóng</a>
+            </div>
+        </div>
+    </div>
+
+    
+    
+
 </div>

@@ -2,372 +2,87 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using WebBanMayTinh.Areas.Admin.Models.Views;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Models.DTO;
 
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    //[Authorize(Roles = "Admin")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.AdminView)]
     public class HomeController : Controller
     {
-        DataContext conn;
+        DataContext _context;
 
         public HomeController(DataContext conn)
         {
-            this.conn = conn;
+            this._context = conn;
         }
-
-        public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
+        public async Task<IActionResult> Index()
         {
-            // Lấy dữ liệu cơ bản
-            var query = conn.Products
-                .Include(c => c.Category)
-                .Include(c => c.Images)
-                .AsQueryable();
+            var now = DateTime.Now;
 
-            // Lọc theo tên
-            if (!string.IsNullOrEmpty(searchName))
-            {
-                query = query.Where(c => c.Name.Contains(searchName));
-            }
-
-            // Lọc theo hãng sản xuất
-            if (!string.IsNullOrEmpty(searchManufacturer))
-            {
-                query = query.Where(c => c.Manufacturer.Contains(searchManufacturer));
-            }
-
-            // Lọc theo khoảng giá
-            if (priceFrom.HasValue)
-                query = query.Where(c => c.Price >= priceFrom.Value);
-            if (priceTo.HasValue)
-                query = query.Where(c => c.Price <= priceTo.Value);
-
-            // Tổng số bản ghi sau lọc
-            int totalItems = query.Count();
-
-            // Phân trang
-            var computers = query
-                .OrderBy(c => c.Name)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+            // 6 tháng gần nhất
+            var lastSixMonths = Enumerable.Range(0, 6)
+                .Select(i => new DateTime(now.Year, now.Month, 1).AddMonths(-i))
+                .OrderBy(d => d)
                 .ToList();
 
-            // Truyền dữ liệu phân trang qua ViewBag
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            // Doanh thu theo tháng (1 QUERY)
+            var revenueByMonth = await _context.Orders
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Total = g.Sum(x => x.TotalAmount)
+                }).ToListAsync();
 
-            // Truyền lại các giá trị tìm kiếm để giữ trên form
-            ViewBag.SearchName = searchName;
-            ViewBag.SearchManufacturer = searchManufacturer;
-            ViewBag.PriceFrom = priceFrom;
-            ViewBag.PriceTo = priceTo;
+            // Doanh thu tháng này / tháng trước
+            var thisMonthRevenue = revenueByMonth
+                .FirstOrDefault(x => x.Year == now.Year && x.Month == now.Month)?.Total ?? 0;
 
-            return View(computers);
-        }
+            var lastMonth = now.AddMonths(-1);
+            var lastMonthRevenue = revenueByMonth
+                .FirstOrDefault(x => x.Year == lastMonth.Year && x.Month == lastMonth.Month)?.Total ?? 0;
 
-        public IActionResult Shop(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
-        {
-            // Lấy dữ liệu cơ bản
-            var query = conn.Products
-                .Include(c => c.Category)
-                .Include(c => c.Images)
-                .AsQueryable();
+            decimal growth = lastMonthRevenue == 0
+                ? 100
+                : (thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100;
 
-            // Lọc theo tên
-            if (!string.IsNullOrEmpty(searchName))
+            var dashboard = new DashboardVM
             {
-                query = query.Where(c => c.Name.Contains(searchName));
-            }
+                TotalOrders = await _context.Orders.CountAsync(),
+                TotalProducts = await _context.Products.CountAsync(),
+                TotalUsers = await _context.Users.CountAsync(),
 
-            // Lọc theo hãng sản xuất
-            if (!string.IsNullOrEmpty(searchManufacturer))
-            {
-                query = query.Where(c => c.Manufacturer.Contains(searchManufacturer));
-            }
+                RevenueThisMonth = thisMonthRevenue,
+                RevenueLastMonth = lastMonthRevenue,
+                RevenueGrowthPercent = Math.Round(growth, 2),
 
-            // Lọc theo khoảng giá
-            if (priceFrom.HasValue)
-                query = query.Where(c => c.Price >= priceFrom.Value);
-            if (priceTo.HasValue)
-                query = query.Where(c => c.Price <= priceTo.Value);
+                MonthlyLabels = lastSixMonths.Select(m => m.ToString("MM/yyyy")).ToList(),
+                MonthlyRevenue = lastSixMonths.Select(m =>
+                    revenueByMonth.FirstOrDefault(x => x.Year == m.Year && x.Month == m.Month)?.Total ?? 0
+                ).ToList(),
 
-            // Tổng số bản ghi sau lọc
-            int totalItems = query.Count();
+                CategoryNames = await _context.Categories.Select(c => c.Name).ToListAsync(),
+                ProductCountByCategory = await _context.Categories
+                    .Select(c => c.Products.Count()).ToListAsync(),
 
-            // Phân trang
-            var computers = query
-                .OrderBy(c => c.Name)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+                RecentOrders = await _context.Orders
+                    .Include(o => o.User)
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Take(5)
+                    .ToListAsync(),
 
-            // Truyền dữ liệu phân trang qua ViewBag
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-            // Truyền lại các giá trị tìm kiếm để giữ trên form
-            ViewBag.SearchName = searchName;
-            ViewBag.SearchManufacturer = searchManufacturer;
-            ViewBag.PriceFrom = priceFrom;
-            ViewBag.PriceTo = priceTo;
-
-            return View(computers);
-        }
-
-        public IActionResult Accounts()
-        {
-            var users = conn.Users;
-            return View(users);
-        }
-
-        public IActionResult AccountAdd()
-        {
-            return View();
-        }
-
-
-        [HttpGet]
-        public IActionResult Add()
-        {
-            ViewBag.CategoriesId = new SelectList(conn.Categories, "Id", "Name");
-            return View(new ComputerDto());
-        }
-
-        [HttpPost]
-        public IActionResult AddAction(ComputerDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.CategoriesId = new SelectList(conn.Categories, "Id", "Name", dto.CategoriesId);
-                return View(dto);
-            }
-
-            if (dto.CategoriesId == null || !conn.Categories.Any(c => c.Id == dto.CategoriesId))
-            {
-                ModelState.AddModelError("CategoriesId", "Danh mục không tồn tại");
-                ViewBag.CategoriesId = new SelectList(conn.Categories, "Id", "Name", dto.CategoriesId);
-                return View(dto);
-            }
-
-            // Tạo entity Computer
-            var computer = new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = dto.Name,
-                Manufacturer = dto.Manufacturer,
-                Price = dto.Price,
-                Quantity = dto.Quantity,
-                Description = dto.Description,
-                CategoryId = dto.CategoriesId,
-                CreateAt = DateOnly.FromDateTime(DateTime.Now),
-                UpdateAt = DateOnly.FromDateTime(DateTime.Now)
+                LowStockProducts = await _context.Products
+                    .Where(p => p.Quantity < 10)
+                    .OrderBy(p => p.Quantity)
+                    .ToListAsync()
             };
 
-            conn.Products.Add(computer);
-
-            // Upload ảnh
-            string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            string folder = Path.Combine(wwwRoot, "assets", "img", "Computer");
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-            // Ảnh chính
-            if (dto.MainImage != null)
-            {
-                string mainFileName = Guid.NewGuid() + Path.GetExtension(dto.MainImage.FileName);
-                string mainPath = Path.Combine(folder, mainFileName);
-                using (var fs = new FileStream(mainPath, FileMode.Create))
-                {
-                    dto.MainImage.CopyTo(fs);
-                }
-                conn.Images.Add(new Image
-                {
-                    Id = Guid.NewGuid(),
-                    ProductId = computer.Id,
-                    Url = $"/assets/img/Computer/{mainFileName}",
-                    IsMain = true
-                });
-            }
-
-            // Ảnh phụ
-            if (dto.AdditionalImages != null && dto.AdditionalImages.Any())
-            {
-                foreach (var file in dto.AdditionalImages)
-                {
-                    string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-                    string filePath = Path.Combine(folder, fileName);
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        file.CopyTo(fs);
-                    }
-                    conn.Images.Add(new Image
-                    {
-                        Id = Guid.NewGuid(),
-                        ProductId = computer.Id,
-                        Url = $"/assets/img/Computer/{fileName}",
-                        IsMain = false
-                    });
-                }
-            }
-
-            conn.SaveChanges();
-            return RedirectToAction("Index");
-        }
-
-        // ================== UPDATE ==================
-        [HttpGet]
-        public IActionResult Update(Guid id)
-        {
-            var computer = conn.Products
-                .Include(c => c.Images)
-                .FirstOrDefault(c => c.Id == id);
-
-            if (computer == null) return NotFound();
-
-            ViewBag.CategoriesId = new SelectList(conn.Categories, "Id", "Name", computer.CategoryId);
-            ViewBag.ComputerId = computer.Id;
-            ViewBag.MainImage = computer.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
-            var dto = new ComputerDto
-            {
-                Name = computer.Name,
-                Manufacturer = computer.Manufacturer,
-                Price = computer.Price,
-                Quantity = computer.Quantity,
-                Description = computer.Description,
-                CategoriesId = computer.CategoryId
-            };
-            return View(dto);
-        }
-
-        [HttpPost]
-        public IActionResult UpdateAction(Guid id, ComputerDto dto)
-        {
-            var computer = conn.Products
-                .Include(c => c.Images)
-                .FirstOrDefault(c => c.Id == id);
-
-            if (computer == null) return NotFound();
-
-            if (!ModelState.IsValid)
-            {
-                ViewBag.CategoriesId = new SelectList(conn.Categories, "Id", "Name", dto.CategoriesId);
-                ViewBag.MainImage = computer.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
-                return View("Update", dto);
-            }
-
-            computer.Name = dto.Name;
-            computer.Manufacturer = dto.Manufacturer;
-            computer.Price = dto.Price;
-            computer.Quantity = dto.Quantity;
-            computer.Description = dto.Description;
-            computer.CategoryId = dto.CategoriesId;
-            computer.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
-
-            string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            string folder = Path.Combine(wwwRoot, "assets", "img", "Computer");
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-            // Ảnh chính mới
-            if (dto.MainImage != null)
-            {
-                var oldMain = computer.Images.FirstOrDefault(i => i.IsMain);
-                if (oldMain != null)
-                {
-                    string oldPath = Path.Combine(wwwRoot, oldMain.Url.TrimStart('/').Replace("/", "\\"));
-                    if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                    conn.Images.Remove(oldMain);
-                }
-
-                string fileName = Guid.NewGuid() + Path.GetExtension(dto.MainImage.FileName);
-                string filePath = Path.Combine(folder, fileName);
-                using (var fs = new FileStream(filePath, FileMode.Create))
-                {
-                    dto.MainImage.CopyTo(fs);
-                }
-                conn.Images.Add(new Image
-                {
-                    Id = Guid.NewGuid(),
-                    ProductId = computer.Id,
-                    Url = $"/assets/img/Computer/{fileName}",
-                    IsMain = true
-                });
-            }
-
-            // Ảnh phụ mới
-            if (dto.AdditionalImages != null && dto.AdditionalImages.Any())
-            {
-                foreach (var file in dto.AdditionalImages)
-                {
-                    string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-                    string filePath = Path.Combine(folder, fileName);
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        file.CopyTo(fs);
-                    }
-                    conn.Images.Add(new Image
-                    {
-                        Id = Guid.NewGuid(),
-                        ProductId = computer.Id,
-                        Url = $"/assets/img/Computer/{fileName}",
-                        IsMain = false
-                    });
-                }
-            }
-
-            conn.SaveChanges();
-            return RedirectToAction("Index");
-        }
-
-        // ================== DELETE ==================
-        [HttpGet]
-        public IActionResult Delete(Guid id)
-        {
-            var computer = conn.Products.FirstOrDefault(c => c.Id == id);
-            if (computer == null) return NotFound();
-            return View(computer);
-        }
-
-        [HttpPost]
-        public IActionResult DeleteAction(Guid id)
-        {
-            var computer = conn.Products
-                .Include(c => c.Images)
-                .FirstOrDefault(c => c.Id == id);
-
-            if (computer == null) return NotFound();
-
-            string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-            foreach (var img in computer.Images)
-            {
-                string fullPath = Path.Combine(wwwRoot, img.Url.TrimStart('/').Replace("/", "\\"));
-                if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
-            }
-
-            conn.Images.RemoveRange(computer.Images);
-            conn.Products.Remove(computer);
-            conn.SaveChanges();
-
-            return RedirectToAction("Index");
-        }
-
-
-        // ==================== DETAIL ===============
-        [HttpGet]
-        public IActionResult Detail(Guid id)
-        {
-            // Lấy máy tính theo id, bao gồm các ảnh
-            var computer = conn.Products
-                .Include(c => c.Images)
-                .Include(c => c.Category) // Nếu muốn hiển thị tên danh mục
-                .FirstOrDefault(c => c.Id == id);
-
-            if (computer == null) return NotFound();
-
-            // Truyền model vào view
-            return View(computer);
+            return View(dashboard);
         }
     }
-
 }

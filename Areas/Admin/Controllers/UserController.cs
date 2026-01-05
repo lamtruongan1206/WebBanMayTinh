@@ -6,24 +6,30 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Areas.Admin.Models.Views;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Services;
 
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
+    [Authorize(Policy = $"permission:{Permissions.UserAccess}")]
+    //[HasPermission(Permissions.UserRead)]
     public class UserController : Controller
     {
         private readonly DataContext _context;
         private IUserService userService;
-
-
         private UserManager<AppUser> _userManager;
         private SignInManager<AppUser> signInManager;
         private RoleManager<IdentityRole> roleManager;
 
-        public UserController(DataContext context, IUserService userService, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public UserController(
+            DataContext context, 
+            IUserService userService, 
+            UserManager<AppUser> userManager, 
+            SignInManager<AppUser> signInManager, 
+            RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             this.userService = userService;
@@ -32,7 +38,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             this.roleManager = roleManager;
         }
 
-
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserRead)]
         public async Task<IActionResult> Index()
         {
             var users = await _context.Users.ToListAsync();

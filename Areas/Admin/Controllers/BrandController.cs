@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Slugify;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.BrandAccess)]
     public class BrandController : Controller
     {
         private readonly DataContext _context;
@@ -21,12 +24,14 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         // GET: Admin/Brand
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandRead)]
         public async Task<IActionResult> Index()
-        {
+        {   
             return View(await _context.Brand.ToListAsync());
         }
 
         // GET: Admin/Brand/Details/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandRead)]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -45,6 +50,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         // GET: Admin/Brand/Create
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandCreate)]
         public IActionResult Create()
         {
             return View();
@@ -55,6 +61,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandCreate)]
         public async Task<IActionResult> Create(Brand brand)
         {
             if (ModelState.IsValid)
@@ -79,6 +86,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         // GET: Admin/Brand/Edit/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandUpdate)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -99,6 +107,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandUpdate)]
         public async Task<IActionResult> Edit(int id, Brand brand)
         {
             if (id != brand.Id)
@@ -130,6 +139,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         // GET: Admin/Brand/Delete/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandDelete)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -150,6 +160,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         // POST: Admin/Brand/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.BrandDelete)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var brand = await _context.Brand.FindAsync(id);

@@ -3,16 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebBanMayTinh.Areas.Admin.Models.Views;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Models.DTO;
 
 namespace WebBanMayTinh.Areas.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin, Employee")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.ProductAccess)]
     public class ProductController : Controller
     {
         DataContext _context = new DataContext();
+
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductRead)]
         public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
         {
             // Lấy dữ liệu cơ bản
@@ -63,6 +66,7 @@ namespace WebBanMayTinh.Areas.Controllers
         }
 
         [HttpGet]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductCreate)]
         public IActionResult Add()
         {
             ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name");
@@ -72,6 +76,7 @@ namespace WebBanMayTinh.Areas.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductCreate)]
         public IActionResult Add(ProductCreateVM dto)
         {
             if (!ModelState.IsValid)
@@ -155,6 +160,7 @@ namespace WebBanMayTinh.Areas.Controllers
 
         // ================== UPDATE ==================
         [HttpGet]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductUpdate)]
         public IActionResult Update(Guid id)
         {
             var computer = _context.Products
@@ -181,6 +187,7 @@ namespace WebBanMayTinh.Areas.Controllers
         }
 
         [HttpPost]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductUpdate)]
         public IActionResult UpdateAction(Guid id, ComputerDto dto)
         {
             var computer = _context.Products
@@ -264,6 +271,7 @@ namespace WebBanMayTinh.Areas.Controllers
 
         // ================== DELETE ==================
         [HttpGet]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductDelete)]
         public IActionResult Delete(Guid id)
         {
             var computer = _context.Products.FirstOrDefault(c => c.Id == id);
@@ -272,6 +280,7 @@ namespace WebBanMayTinh.Areas.Controllers
         }
 
         [HttpPost]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductDelete)]
         public IActionResult DeleteAction(Guid id)
         {
             var computer = _context.Products
@@ -298,6 +307,7 @@ namespace WebBanMayTinh.Areas.Controllers
 
         // ==================== DETAIL ===============
         [HttpGet]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductRead)]
         public IActionResult Detail(Guid id)
         {
             // Lấy máy tính theo id, bao gồm các ảnh
