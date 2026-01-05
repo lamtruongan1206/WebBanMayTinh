@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Models.Views;
+using WebBanMayTinh.Services;
 
 namespace WebBanMayTinh.Controllers
 {
@@ -16,6 +18,8 @@ namespace WebBanMayTinh.Controllers
         private readonly DataContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IEmailSender _emailSender;
+
 
         // ================== MoMo CONFIG (TEST) ==================
         private const string MOMO_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create";
@@ -28,11 +32,13 @@ namespace WebBanMayTinh.Controllers
         public CheckoutController(
             DataContext context,
             UserManager<AppUser> userManager,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IEmailSender emailSender)
         {
             _context = context;
             _userManager = userManager;
             _httpClientFactory = httpClientFactory;
+            _emailSender = emailSender;
         }
 
         // =========================================================
@@ -83,12 +89,9 @@ namespace WebBanMayTinh.Controllers
 
         }
 
-        // =========================================================
-        // ĐẶT HÀNG
-        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult PlaceOrder(string paymentMethod)
+        public async Task<IActionResult> PlaceOrder(string paymentMethod)
         {
             var user = _userManager.GetUserAsync(User).Result;
             if (user == null) return Redirect("/Account/Login");
@@ -112,7 +115,6 @@ namespace WebBanMayTinh.Controllers
             if (address == null)
                 return Redirect("/Address/Create?returnUrl=/Checkout/Index");
 
-            // 🔒 CHECK STOCK
             foreach (var c in carts)
             {
                 if (c.Product.Quantity < c.Quantity)
@@ -122,7 +124,6 @@ namespace WebBanMayTinh.Controllers
                 }
             }
 
-            // 🧾 TẠO ORDER CHUNG
             Order order = new()
             {
                 Id = Guid.NewGuid(),
@@ -130,7 +131,10 @@ namespace WebBanMayTinh.Controllers
                 AddressId = address.Id,
                 Status = paymentMethod == "COD"
                             ? OrderStatus.Pending
-                            : OrderStatus.Pending, // chờ thanh toán
+                            : OrderStatus.Pending, 
+                PaymentMethod = paymentMethod == "COD"
+                        ? PaymentMethod.CASH_ON_DELIVERY
+                        : PaymentMethod.ONLINE_PAYMENT,
                 CreatedAt = DateTime.Now,
                 OrderItems = new()
             };
@@ -146,10 +150,11 @@ namespace WebBanMayTinh.Controllers
                 order.OrderItems.Add(new OrderItems
                 {
                     Id = Guid.NewGuid(),
-                 //   OrderId = order.Id, // 🔥 BẮT BUỘC
+                    OrderId = order.Id,
                     ProductId = c.Product.Id,
                     Quantity = c.Quantity ?? 0,
-                    Price = c.Product.Price ?? 0
+                    Price = c.Product.Price ?? 0,
+                    Product = c.Product,
                 });
 
             }
@@ -158,6 +163,53 @@ namespace WebBanMayTinh.Controllers
             order.ShippingFee = 100000;
             order.TotalAmount = subtotal + order.ShippingFee;
             order.Quantity = totalQty;
+
+            string emailBody = $@"
+                <p>Xin chào <b>{user.FirstName} {user.LastName}</b>,</p>
+
+                <p>Cảm ơn bạn đã mua hàng tại <b>Web Bán Máy Tính</b>.</p>
+
+                <p>Chúng tôi đã nhận được đơn hàng của bạn với thông tin như sau:</p>
+
+                <ul>
+                    <li><b>Mã đơn hàng:</b> {order.Id}</li>
+                    <li><b>Ngày đặt:</b> {order.CreatedAt:dd/MM/yyyy HH:mm}</li>
+                    <li><b>Phương thức thanh toán:</b> {order.PaymentMethod}</li>
+                    <li><b>Tổng tiền:</b> {order.TotalAmount:N0} đ</li>
+                </ul>
+
+                <p><b>Danh sách sản phẩm:</b></p>
+
+                <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse'>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Đơn giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                    </tr>";
+
+            foreach (var item in order.OrderItems)
+            {
+                emailBody += $@"
+                <tr>
+                    <td>{item.Product.Name}</td>
+                    <td>{item.Price:N0} đ</td>
+                    <td>{item.Quantity}</td>
+                    <td>{(item.Price * item.Quantity):N0} đ</td>
+                </tr>";
+            }
+
+            emailBody += $@"
+                </table>
+
+                <p>Phí vận chuyển: <b>{order.ShippingFee:N0} đ</b></p>
+                <p><b>Tổng thanh toán: {order.TotalAmount:N0} đ</b></p>
+
+                <p>Chúng tôi sẽ xử lý và giao hàng trong thời gian sớm nhất.</p>
+
+                <p>Trân trọng,<br/>
+                <b>Web Bán Máy Tính</b></p>
+                ";
 
             // ================= COD =================
             if (paymentMethod == "COD")
@@ -172,12 +224,23 @@ namespace WebBanMayTinh.Controllers
                 _context.SaveChanges();
 
                 TempData["Success"] = "Đặt hàng COD thành công!";
+
+
+                await _emailSender.SendEmailAsync(
+                user.Email!,
+                $"[XÁC NHẬN ĐƠN HÀNG] Đơn hàng #{order.Id}",
+                emailBody);
+
                 return RedirectToAction("Index", "Cart");
             }
 
             // ================= MOMO =================
             _context.Orders.Add(order);
             _context.SaveChanges();
+
+            
+
+            
 
             return CreateMoMoPayment(order);
         }

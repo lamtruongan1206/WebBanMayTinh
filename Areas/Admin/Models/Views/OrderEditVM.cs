@@ -8,6 +8,8 @@ namespace WebBanMayTinh.Areas.Admin.Models.Views
         public Guid OrderId { get; set; }
         [Display(Name = "Trạng thái")]
         public OrderStatus Status { get; set; }
+
+        public List<OrderStatusHistory> OrderStatusHistories { get; set; } = new List<OrderStatusHistory>();
         
     }
 }

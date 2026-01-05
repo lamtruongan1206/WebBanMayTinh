@@ -1,0 +1,17 @@
+﻿@{
+	ViewData["Title"] = "Xác nhận hủy đơn hàng";
+}
+@model Order 
+
+
+<h2>Xác nhận hủy đơn hàng</h2>
+
+<div> <b>Lý do hủy:</b> @Model.CancelReason</div>
+
+<form asp-action="ConfirmCancelRequest" method="post" class="mt-2">
+	<input name="id" value="@Model.Id" type="hidden"/>
+
+	<a asp-action="Index" class="btn-link">Quay lại</a>
+	<button class="btn btn-danger ms-2">Xác nhận</button>
+</form>
+

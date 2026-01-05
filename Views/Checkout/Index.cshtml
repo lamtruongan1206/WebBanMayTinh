@@ -87,8 +87,8 @@
 
                 <!-- TỔNG TIỀN -->
                 <div class="text-end">
-                    <p>Tiền hàng: <strong>@Model.Subtotal đ</strong></p>
-                    <p>Phí ship: <strong>@Model.ShippingFee đ</strong></p>
+                    <p>Tiền hàng: <strong>@CurrencyExtensions.ToVnd(Model.Subtotal)</strong></p>
+                    <p>Phí ship: <strong>@CurrencyExtensions.ToVnd(Model.ShippingFee)</strong></p>
                     <p class="fs-4 text-danger">
                         Tổng thanh toán: <strong>
                             @Model.TotalAmount.ToString("N0") đ

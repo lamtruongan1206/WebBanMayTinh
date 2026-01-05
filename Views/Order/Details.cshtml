@@ -3,6 +3,12 @@
 @{
     ViewData["Title"] = "Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    decimal totalProductPrice = 0;
+    foreach (var i in Model.Items)
+    {
+        totalProductPrice = totalProductPrice + (i.Price * i.Quantity);
+    }
 }
 
 <h2 class="text-center mt-4 mb-4">Chi tiết đơn hàng</h2>
@@ -75,14 +81,22 @@
         </div>
     </div>
 
-    <div class="w-75 d-flex flex-column justify-content-between">
-        <div>
+    <div class="w-75 d-flex flex-column gap-4">
+        <div class="">
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="">PHƯƠNG THỨC THANH TOÁN</h5>
                     <hr />
-                    <p>Tiền mặt: </p>
-                    <p>Chuyển khoản MOMO: </p>
+
+                    @if(Model.PaymentMethod == PaymentMethod.CASH_ON_DELIVERY)
+                    {
+                        <p>Tiền mặt</p>
+                    }
+                    else
+                    {
+                        <p>Cxhuyển khoản MOMO: </p>
+                    }
+
                 </div>
             </div>
 
@@ -90,42 +104,70 @@
                 <div class="card-body">
                     <p class="d-flex justify-content-between">
                         <span>Tạm tính</span>
-                        <span>16.000.000đ</span>
+                        <span>@CurrencyExtensions.ToVnd(totalProductPrice)</span>
                     </p>
                     <p class="d-flex justify-content-between">
                         <span>Khuyến mãi</span>
-                        <span>30.000đ</span>
+                        <span>30.000đ (demo)</span>
                     </p>
                     <p class="d-flex justify-content-between">
                         <span>Phí vận chuyển</span>
-                        <span>50.000đ</span>
+                        <span>@CurrencyExtensions.ToVnd(Model.ShippingFee)</span>
                     </p>
                     <p class="d-flex justify-content-between">
                         <span>Mã giảm giá</span>
-                        <span>50.000đ</span>
+                        <span>50.000đ (demo)</span>
                     </p>
                     <p class="d-flex justify-content-between">
                         <span>Thành tiền</span>
-                        <span>50.000đ</span>
+                        <span>@CurrencyExtensions.ToVnd(Model.ShippingFee + totalProductPrice)</span>
                     </p>
                 </div>
             </div>
         </div>
         
+        <div class="card">
+            <div class="card-body">
+				<h5 class="text-uppercase">Lịch sử trạng thái</h5>
+            
 
-        <div class="mt-auto mb-4 w-100">
-            <div class="">
-                @* <div class="d-flex gap-2 w-100 mb-2" role="group">
-                    <a type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Ghi chú</a>
-                    <a type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Sửa đơn</a>
-                    <button disabled type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Hủy đơn</button>
-                </div> *@
-                <a asp-controller="Order" asp-action="Index" type="button" class="btn w-100" style="border-radius: 0px; color: #fff; border: solid 1px #333; background: red; ">Đóng</a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Thời gian</th>
+                            <th scope="col">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < @Model.OrderStatusHistories.Count; i++)
+                        {
+                            <tr>
+                                <th scope="row">@(i + 1)</th>
+                                <td>@Model.OrderStatusHistories[i].UpdateTime</td>
+                                <td>@OrderStatusExtensions.ToVietNamText(@Model.OrderStatusHistories[i].OrderStatus)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
             </div>
         </div>
+
+        
     </div>
 
     
     
 
+</div>
+<div class=" mb-4 w-100 container mt-4">
+    <div class="">
+        @* <div class="d-flex gap-2 w-100 mb-2" role="group">
+                    <a type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Ghi chú</a>
+                    <a type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Sửa đơn</a>
+                    <button disabled type="button" class="btn btn-white-outline w-100" style="border-radius: 0px; color: #555; border: solid 1px #333">Hủy đơn</button>
+                </div> *@
+        <a asp-controller="Order" asp-action="Index" type="button" class="btn w-100" style="border-radius: 0px; color: #fff; border: solid 1px #333; background: red; ">Đóng</a>
+    </div>
 </div>

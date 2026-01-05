@@ -45,10 +45,6 @@
 {
     <div class="alert alert-success">@TempData["AddSuccess"]</div>
 }
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
 
 <!-- ================== EMPTY CART ================== -->
 @if (!Model.Any())

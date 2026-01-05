@@ -32,20 +32,30 @@ namespace WebBanMayTinh.Models
         [Display(Name = "Số lượng")]
         public int Quantity { get; set; }
         [Display(Name = "Khách hàng đã nhận")]
-
         public bool IsReceived { get; set; } = false;
         [Display(Name = "Thời gian nhận hàng")]
         public DateTime? ReceivedTime { get; set; }
 
+        [Display(Name = "Kiểu thanh toán")]
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CASH_ON_DELIVERY;
+        public bool IsReviewed { get; set; }
+
+        // Người dùng
         [Required]
         public string UserId { get; set; }
         [ForeignKey("UserId"), Display(Name = "Tài khoản")]
         public virtual AppUser User { get; set; }
 
+
+        // Địa chỉ
         [Required]
         public Guid AddressId { get; set; }
         [ForeignKey("AddressId"), Display(Name = "Địa chỉ")]
         public Address Address { get; set; }
+
+
+
+
 
         // Chức năng yêu cầu hủy đơn hàng
         [Display(Name = "Yêu cầu hủy")]
@@ -61,7 +71,7 @@ namespace WebBanMayTinh.Models
         public DateTime? CancelledAt { get; set; }
 
         public List<OrderItems> OrderItems { get; set; }
-
+        public List<OrderStatusHistory> OrderStatusHistories { get; set; } = new List<OrderStatusHistory>();
         
     }
 }

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebBanMayTinh.Models.Views.OrderVM>
+﻿@model PaginationResult<OrderVM>
 
 @{
     ViewData["Title"] = "Index";
@@ -14,88 +14,274 @@
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<h2 class="mt-4 text-center">Đơn hàng</h2>
+<style>
+    .star {
+        font-size: 22px;
+        cursor: pointer;
+        color: #ccc;
+    }
 
-<div class="container mx-auto my-4 min-vh-100">
-    @foreach (var order in Model)
-    {
-        <div class="card mb-4">
-            <div class="card-body">
-                @foreach (var item in order.Items)
-                {
-                    <div class="d-flex justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="/assets/img/Computer/@item.ProductThumbnailUrl" style="height: 100px; width: 100px; object-fit: cover"/>
+        .star.active {
+            color: gold;
+        }
+</style>
+
+<h2 class="mt-4 text-center">Đơn hàng</h2>
+<div class="container">
+    <div class="card">
+        <div class="card-body text-center">
+            <ul class="nav nav-pills gap-2 justify-content-center">
+                <li class="nav-item">
+                    <a asp-action="Index" asp-route-orderStatus="" class="nav-link @(string.IsNullOrEmpty(ViewBag.OrderStatus) ? "active" : "")" >Tất cả</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Index" asp-route-orderStatus="@OrderStatus.Pending" class="nav-link @(ViewBag.OrderStatus == OrderStatus.Pending.ToString() ? "active" : "")">Đang chờ</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Index" asp-route-orderStatus="@OrderStatus.Confirmed" class="nav-link @(ViewBag.OrderStatus == OrderStatus.Confirmed.ToString() ? "active" : "")">Đã xác nhận</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Index" asp-route-orderStatus="@OrderStatus.Shipping" class="nav-link @(ViewBag.OrderStatus == OrderStatus.Shipping.ToString() ? "active" : "")">Đang giao</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Index" asp-route-orderStatus="@OrderStatus.Completed" class="nav-link @(ViewBag.OrderStatus == OrderStatus.Completed.ToString() ? "active" : "")">Đã giao</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-action="Index" asp-route-orderStatus="@OrderStatus.Cancelled" class="nav-link @(ViewBag.OrderStatus == OrderStatus.Cancelled.ToString() ? "active" : "")">Đã hủy</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <form class="form mt-2" method="get">
+        <div class="input-group input-group-merge">
+            <span class="input-group-text" id="basic-addon-search31"> <i class="bi bi-search"></i> </span>
+            <input type="hidden" name="orderStatus" value="@ViewBag.OrderStatus" />
+            <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Bạn có thể tìm kiếm theo tên sản phẩm hoặc ID đơn hàng">
+        </div>
+    </form>
+
+
+
+    <div class="mx-auto my-4 min-vh-100">
+        @foreach (var order in Model.Items)
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    @foreach (var item in order.Items)
+                    {
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="/assets/img/Computer/@item.ProductThumbnailUrl" style="height: 100px; width: 100px; object-fit: cover" />
+                                <div>
+                                    <p>Tên sản phẩm: <b>@item.ProductName</b></p>
+                                    <span>Số lượng: <b>@item.Quantity</b> </span>
+                                </div>
+                            </div>
+
+
                             <div>
-                                <p>Tên sản phẩm: <b>@item.ProductName</b></p>
-                                <span>Số lượng: <b>@item.Quantity</b> </span>
+                                <p>
+                                    Trạng thái: <b class="@OrderStatusExtensions.ToTextColor(order.OrderStatus)">
+                                        @OrderStatusExtensions.ToVietNamText(order.OrderStatus)
+                                    </b>
+                                </p>
+                                <p>Giá: <b>@CurrencyExtensions.ToVnd(item.Price)</b></p>
+                                <p>Thành tiền: <b>@CurrencyExtensions.ToVnd(item.Price * item.Quantity)</b></p>
                             </div>
                         </div>
 
-                        
-                        <div>
-                            <p>
-                                Trạng thái: <b class="@OrderStatusExtensions.ToTextColor(order.OrderStatus)">
-                                    @OrderStatusExtensions.ToVietNamText(order.OrderStatus)
-                                </b>
-                            </p>
-                            <p>Giá: <b>@CurrencyExtensions.ToVnd(@item.Price)</b></p>
-                        </div>
+                        <hr />
+
+                    }
+                    <div class="text-end">
+                        @if (order.OrderStatus == OrderStatus.Completed && !order.IsReviewed)
+                        {
+                            <a class="btn-link cursor-pointer" data-bs-toggle="modal" data-bs-target="#reviewModal" style="cursor: pointer">
+                                Đánh giá sản phẩm
+                            </a>
+
+                            <div class="modal fade text-start" id="reviewModal" tabindex="-1">
+                                <form asp-action="Create" asp-controller="ProductReview" method="post">
+                                    <input type="hidden" name="OrderId" value="@order.Id" />
+
+                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                        <div class="modal-content">
+
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Đánh giá sản phẩm</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+
+                                            <div class="modal-body">
+
+                                                @for (int i = 0; i < order.Items.Count; i++)
+                                                {
+                                                    var item = order.Items[i];
+
+                                                    <div class="mb-4 pb-3">
+                                                        <input type="hidden"
+                                                               name="Reviews[@i].ProductId"
+                                                               value="@item.ProductId" />
+
+                                                        <div class="d-flex gap-3">
+                                                            <img src="/assets/img/Computer/@item.ProductThumbnailUrl"
+                                                                 style="width:80px;height:80px;object-fit:cover" />
+
+                                                            <div>
+                                                                <b>@item.ProductName</b>
+
+                                                                <div class="star-rating" data-index="@i">
+                                                                    @for (int star = 1; star <= 5; star++)
+                                                                    {
+                                                                        <i class="bi bi-star star"
+                                                                           data-value="@star"></i>
+                                                                    }
+                                                                </div>
+
+                                                                <input type="hidden"
+                                                                       name="Reviews[@i].Rating"
+                                                                       id="rating-@i" />
+
+                                                            </div>
+
+
+                                                            <textarea class="form-control mt-2"
+                                                          name="Reviews[@i].Comment"
+                                                          placeholder="Nhận xét sản phẩm"></textarea>
+
+                                                        </div>
+                                                    </div>
+
+                                                    @if (i < order.Items.Count - 1)
+                                                    {
+                                                        <hr />
+                                                    }
+                                                }
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    Hủy
+                                                </button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    Gửi đánh giá
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+
+                        @if (order.OrderStatus == OrderStatus.Shipping)
+                        {
+                            <form asp-action="ConfirmReceived" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@order.Id" />
+
+                                <button type="submit"
+                                        class="btn-link p-0"
+                                        style="border: none; background: white"
+                                        onclick="return confirm('Xác nhận bạn đã nhận đơn hàng?');">
+                                    Xác nhận đã nhận đơn
+                                </button>
+                            </form>
+                        }
+
+                        @if (order.OrderStatus < OrderStatus.Shipping && !order.IsCancelRequested)
+                        {
+                            <a asp-action="CancelOrderRequest" asp-route-orderId="@order.Id" class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                                Yêu cầu hủy đơn
+                            </a>
+                        }
+                        else if (order.OrderStatus == OrderStatus.Cancelled)
+                        {
+                            <a class="text-success">
+                                Đơn hàng của bạn đã được hủy.
+                            </a>
+                        }
+                        else if (order.IsCancelRequested)
+                        {
+                            <a class="text-danger">
+                                Yêu cầu hủy đơn của bạn đã được gửi, vui lòng đợi phản hồi từ người bán
+                            </a>
+                        }
+
+
+                        <a asp-action="Details" asp-route-id="@order.Id" class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
+                            Chi tiết
+                        </a>
                     </div>
-
-                    <hr />
-                    
-                }
-                <div class="text-end">
-                    @if (order.OrderStatus == OrderStatus.Completed)
-                    {
-                        <a class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
-                            Đánh giá sản phẩm
-                        </a>
-                        
-                    }
-
-                    @if (order.OrderStatus == OrderStatus.Shipping)
-                    {
-                        <form asp-action="ConfirmReceived" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@order.Id" />
-
-                            <button type="submit"
-                                    class="btn-link p-0" 
-                                    style="border: none; background: white"
-                                    onclick="return confirm('Xác nhận bạn đã nhận đơn hàng?');">
-                                Xác nhận đã nhận đơn
-                            </button>
-                        </form>
-                    }
-
-                    @if (order.OrderStatus < OrderStatus.Shipping && !order.IsCancelRequested)
-                    {
-                        <a asp-action="CancelOrderRequest" asp-route-orderId="@order.Id" class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
-                            Yêu cầu hủy đơn
-                        </a>
-                    }
-                    else if (order.OrderStatus == OrderStatus.Cancelled)
-                    {
-                        <a class="text-success">
-                            Đơn hàng của bạn đã được hủy.
-                        </a>
-                    }
-                    else if (order.IsCancelRequested)
-                    {
-                        <a class="text-danger">
-                            Yêu cầu hủy đơn của bạn đã được gửi, vui lòng đợi phản hồi từ người bán
-                        </a>
-                    }
-                    
-
-                    <a asp-action="Details" asp-route-id="@order.Id" class="btn-sm btn-link cursor-pointer" style="cursor: pointer">
-                        Chi tiết
-                    </a>
                 </div>
             </div>
+        }
+
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-center">
+            <ul class="pagination mt-2">
+
+                <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-route-page="@(Model.CurrentPage - 1)"
+                       asp-route-orderStatus="@ViewBag.OrderStatus"
+                       asp-route-keyword="@ViewBag.Keyword"
+                    >‹</a>
+                </li>
+
+                @foreach (var p in Model.GetPages())
+                {
+                    if (p.IsEllipsis)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item @(p.IsActive ? "active" : "")">
+                            <a class="page-link"
+                               asp-route-page="@p.PageNumber"
+                               asp-route-orderStatus="@ViewBag.OrderStatus"
+                               asp-route-keyword="@ViewBag.Keyword" ">
+                                @p.PageNumber
+                            </a>
+                        </li>
+                    }
+                }
+
+                <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-route-page="@(Model.CurrentPage + 1)"
+                       asp-route-orderStatus="@ViewBag.OrderStatus"
+                       asp-route-keyword="@ViewBag.Keyword">›</a>
+                </li>
+
+            </ul>
         </div>
     }
-
 </div>
+
+
+<script>
+    document.querySelectorAll(".star-rating").forEach(group => {
+        const index = group.dataset.index;
+        const stars = group.querySelectorAll(".star");
+
+        stars.forEach(star => {
+            star.addEventListener("click", () => {
+                const value = star.dataset.value;
+
+                document.getElementById(`rating-${index}`).value = value;
+
+                stars.forEach(s => {
+                    s.classList.toggle("active", s.dataset.value <= value);
+                });
+            });
+        });
+    });
+</script>

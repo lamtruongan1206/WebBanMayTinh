@@ -7,7 +7,8 @@
         public int Quantity { get; set; }
         public List<OrderItemVM> Items { get; set; }
         public OrderStatus OrderStatus { get; set; }
-
+        public DateTime CreateAt { get; set; }  
+        public bool IsReviewed { get; set; }
         public bool IsCancelRequested { get; set; } = false;
     }
 

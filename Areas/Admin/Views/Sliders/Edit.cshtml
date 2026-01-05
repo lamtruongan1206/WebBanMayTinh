@@ -1,0 +1,86 @@
+﻿@model WebBanMayTinh.Models.Slider
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>Slider</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group mb-2">
+                <label  class="control-label">Chọn ảnh</label>
+                <input type="file"
+                       name="fileImage"
+                       class="form-control"
+                       id="imageInput"
+                       accept="image/*" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+
+            <div>
+                <img src="@Model.ImageUrl"
+                     id="previewImage"
+                     class="w-100 mt-2"
+                     style="height:200px; object-fit:cover;" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check mt-2">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+                </label>
+            </div>
+            <div class="form-group text-end">
+                <a asp-action="Index">Quay lại</a>
+                <input type="submit" value="Lưu" class="btn btn-primary ms-2" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    
+</div>
+
+    <script>
+        const input = document.getElementById('imageInput');
+        const preview = document.getElementById('previewImage');
+
+        input.addEventListener('change', function () {
+            if (!this.files || this.files.length === 0) return;
+
+            const file = this.files[0];
+
+            // Chặn file không phải ảnh
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chọn file ảnh');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+
+

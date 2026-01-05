@@ -147,10 +147,11 @@
                                     @if (item.IsCancelRequested && item.Status != OrderStatus.Cancelled)
                                     {
                                         <li class="cursor-pointer">
-                                            <form asp-action="ConfirmCancelRequest" method="post">
+                                            @* <form asp-action="ConfirmCancelRequest" method="post">
                                                 <input type="hidden" name="id" value="@item.Id" />
                                                 <button role="button" class="dropdown-item"><i class='bx bx-x'></i> Xác nhận hủy đơn hàng </button>
-                                            </form>
+                                            </form> *@
+                                            <a class="dropdown-item" asp-route-id="@item.Id" asp-action="CancelRequest"><i class='bx bx-x'></i> Xác nhận hủy đơn hàng</a>
                                         </li>
                                     }
                                     <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class='bx  bx-trash'></i> Xóa </a> </li>

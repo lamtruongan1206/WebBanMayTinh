@@ -110,6 +110,9 @@ await app.SeedRolesPermissionsAsync();
 await app.ApplyMigrationsAsync();
 await app.SeedPermissionsAsync();
 
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+
 app.MapControllerRoute(
       name: "areas",
       pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"

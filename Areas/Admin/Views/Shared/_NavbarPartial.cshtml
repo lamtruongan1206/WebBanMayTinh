@@ -90,6 +90,20 @@
             </a>
         </li>
 
+        <li class="menu-item @(currentController == "Invoice" ? "active" : "")">
+            <a asp-controller="Invoice" asp-action="Index" class="menu-link">
+                <i class='menu-icon tf-icons bx  bx-dollar-circle'></i>
+                <div data-i18n="Analytics">Quản lý thanh toán</div>
+            </a>
+        </li>
+
+        <li class="menu-item @(currentController == "Sliders" ? "active" : "")">
+            <a asp-controller="Sliders" asp-action="Index" class="menu-link">
+                <i class='menu-icon tf-icons bx  bx-slideshow'></i>
+                <div data-i18n="Analytics">Quản lý slider</div>
+            </a>
+        </li>
+
 
         <li class="menu-item mt-auto">
             <a href="/" class="menu-link">

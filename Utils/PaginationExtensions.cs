@@ -8,7 +8,7 @@ namespace WebBanMayTinh.Utils
         this IQueryable<T> query,
         int page,
         int pageSize,
-        int maxPageDisplay = 5)
+        int maxPageDisplay = 3)
         {
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;

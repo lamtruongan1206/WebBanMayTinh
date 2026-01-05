@@ -3,7 +3,17 @@
 @{
     ViewData["Title"] = "Chi tiết máy tính";
 }
+<style>
+    .star {
+        font-size: 22px;
+        cursor: pointer;
+        color: #ccc;
+    }
 
+        .star.active {
+            color: gold;
+        }
+</style>
 <div class="container mt-4">
     <h2 class="text-primary fw-bold mb-3">Chi tiết máy: @Model.Name</h2>
 
@@ -79,5 +89,37 @@
         <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
         <a asp-action="Update" asp-route-id="@Model.Id" class="btn btn-warning">Cập nhật</a>
         <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Xóa</a>
+    </div>
+
+
+    <div class="card mt-4 mb-4">
+        <div class="card-header">
+            ĐÁNH GIÁ SẢN PHẨM
+        </div>
+        <div class="card-body">
+            @foreach (var item in Model.ProductReviews)
+            {
+                <div class="row">
+                    <div class="col-1">
+                        <img src="@item.User.Avatar" class="" style="height: 75px; width: 75px; border-radius: 50%"/>
+                    </div>    
+                    <div class="col-11">
+                        <p>@item.User.UserName <br /> 
+                            @for (int i = 0; i < item.Rating; i++)
+                            {
+                                <i class="bi bi-star-fill star active"
+                                   ></i>
+                            }
+                            @for (int i = 0; i <  5 - item.Rating; i++)
+                            {
+                                <i class="bi bi-star-fill star active"></i>
+                            }
+                            <br />
+                        @item.CreatedAt | @item.Comment
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
     </div>
 </div>

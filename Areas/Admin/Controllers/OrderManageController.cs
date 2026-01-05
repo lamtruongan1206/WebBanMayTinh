@@ -86,7 +86,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                 query = query.Where(o => o.TotalAmount <= TotalTo.Value);
             }
 
-
             var pagedOrders = await query
                 .OrderByDescending(o => o.CreatedAt)
                 .ToPagedResultAsync(page, pageSize);
@@ -167,10 +166,15 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            var orderStatusHistory = _context.OrderStatusHistories.Where(o => o.OrderId == id)
+                .OrderByDescending(o=>o.UpdateTime)
+                .ToList();
+
             return View(new OrderEditVM
             {
                 OrderId = order.Id,
-                Status = order.Status
+                Status = order.Status,
+                OrderStatusHistories = orderStatusHistory   
             });
         }
 
@@ -196,7 +200,19 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                     order.Status = vm.Status;
                     order.UpdatedAt = DateTime.Now;
 
+                    var orderStatusHistory = new OrderStatusHistory
+                    {
+                        OrderId = id,
+                        OrderStatus = vm.Status,
+                        UpdateTime = DateTime.Now,
+                        Id = Guid.NewGuid(),
+                    };
+
+                    vm.OrderStatusHistories.Add(orderStatusHistory);
+
+                    _context.Add(orderStatusHistory);
                     _context.Update(order);
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -210,7 +226,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return View(vm);
             }
             return View(vm);
         }
@@ -251,6 +267,15 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CancelRequest(Guid id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order is null) return NotFound();
+            return View(order);
+        }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [HasPermission(CustomClaimTypes.Permission, Permissions.OrderUpdate)]
@@ -273,9 +298,17 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                 order.CancelledAt = DateTime.Now;
                 order.Status = OrderStatus.Cancelled;
 
-                TempData["Success"] = "Hủy đơn hàng thành công";
+                var orderStatusHistory = new OrderStatusHistory
+                {
+                    OrderId = id,
+                    OrderStatus = order.Status,
+                    UpdateTime = DateTime.Now
+                };
 
+                TempData["Success"] = "Hủy đơn hàng thành công";
+                _context.Add(orderStatusHistory);
                 _context.Update(order);
+
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)

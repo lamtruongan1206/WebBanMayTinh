@@ -68,6 +68,11 @@ namespace WebBanMayTinh.Controllers
                 .Take(pageSize)
                 .ToList();
 
+            var sliders = _context.Sliders.Where(s => s.IsActive).ToList();
+
+            ViewBag.Sliders = sliders;
+
+
             // 4️⃣ Sidebar data
             ViewBag.Categories = _context.Categories.AsNoTracking().ToList();
             ViewBag.Brands = _context.Brand.AsNoTracking().ToList();
@@ -320,6 +325,7 @@ namespace WebBanMayTinh.Controllers
             // Lấy máy tính theo id, bao gồm các ảnh
             var computer = _context.Products
                 .Include(c => c.Images)
+                .Include(c => c.ProductReviews).ThenInclude(pr => pr.User)
                 .Include(c => c.Category) // Nếu muốn hiển thị tên danh mục
                 .FirstOrDefault(c => c.Id == id);
 

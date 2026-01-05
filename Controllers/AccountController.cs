@@ -17,7 +17,6 @@ using WebBanMayTinh.Utils;
 
 namespace WebBanMayTinh.Controllers
 {
-    //[Authorize]
     public class AccountController : Controller
     {
         private readonly DataContext context;
@@ -35,7 +34,7 @@ namespace WebBanMayTinh.Controllers
             this.userService = userService;
             this.emailSender = emailSender;
         }
-        // GET: AccountController
+        
         [HttpGet, Authorize]
         public ActionResult Profile(string? name = "")
         {
@@ -46,8 +45,6 @@ namespace WebBanMayTinh.Controllers
             }
             return View(user);
         }
-
-
       
         [HttpPost, Authorize]
         [ValidateAntiForgeryToken]
@@ -84,13 +81,11 @@ namespace WebBanMayTinh.Controllers
             return Redirect("/account/profile?name=" + currentUser.UserName);
         }
 
-        // GET: AccountController/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: AccountController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(UserRegisterVM userVM)
@@ -219,13 +214,11 @@ namespace WebBanMayTinh.Controllers
             return Redirect("/");   
         }
 
-        // GET: AccountController/Edit/5
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: AccountController/Edit/5
         [HttpPost, Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -240,26 +233,6 @@ namespace WebBanMayTinh.Controllers
             }
         }
 
-        // GET: AccountController/Delete/5
-        //public ActionResult Delete(int id)
-        //{
-        //    return View();
-        //}
-
-        //// POST: AccountController/Delete/5
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult Delete(int id, IFormCollection collection)
-        //{
-        //    try
-        //    {
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch
-        //    {
-        //        return View();
-        //    }
-        //}
         public async Task<IActionResult> ForgotPassword()
         {
             return View();
@@ -446,6 +419,5 @@ namespace WebBanMayTinh.Controllers
             //TempData["success"] = "Đăng nhập thành công";
             return Redirect("/");
         }
-
     }
 }
