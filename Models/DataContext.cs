@@ -41,9 +41,10 @@ public partial class DataContext : IdentityDbContext<AppUser>
     public virtual DbSet<Brand> Brand { get; set; }
     public virtual DbSet<Slider> Sliders{ get; set; }
 
+    public DbSet<ProductImport> ProductImports { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //=> optionsBuilder.UseSqlServer("Data Source=DESKTOP-UCKVMB6\\SQLEXPRESS;Initial Catalog=ShopMayTinh;Integrated Security=True;TrustServerCertificate=true;");
-        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-UVNBRQT\\SQLEXPRESS;Initial Catalog=ShopMayTinh;Integrated Security=True;TrustServerCertificate=true;");
+        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-UCKVMB6\\SQLEXPRESS;Initial Catalog=ShopMayTinh;Integrated Security=True;TrustServerCertificate=true;");
+     //   => optionsBuilder.UseSqlServer("Data Source=DESKTOP-UVNBRQT\\SQLEXPRESS;Initial Catalog=ShopMayTinh;Integrated Security=True;TrustServerCertificate=true;");
 
 }

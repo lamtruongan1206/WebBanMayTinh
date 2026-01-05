@@ -1,0 +1,21 @@
+﻿@model WebBanMayTinh.Areas.Admin.Models.Views.ProductImportVM
+
+<h3>Nhập hàng</h3>
+
+<form asp-action="Import" method="post">
+    <input type="hidden" asp-for="ProductId" />
+
+    <div class="mb-3">
+        <label class="form-label">Sản phẩm</label>
+        <input class="form-control" value="@Model.ProductName" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Quantity" class="form-label">Số lượng nhập</label>
+        <input asp-for="Quantity" type="number" min="1" class="form-control" />
+        <span asp-validation-for="Quantity" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-success">Nhập kho</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>

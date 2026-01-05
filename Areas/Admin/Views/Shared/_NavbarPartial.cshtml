@@ -41,7 +41,7 @@
             </a>
         </li>
 
-        <li class="menu-item @(currentController == "Product" || currentController == "Brand" ? "open active" : "")">
+        <li class="menu-item @(currentController == "Product" || currentController == "Brand"|| currentController == "Category"? "open active" : "")">
             <a class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bxl-product-hunt"></i>
                 <div data-i18n="Account Settings">Quản lý sản phẩm</div>
@@ -54,9 +54,24 @@
                 </li>
                 <li class="menu-item @(currentController == "Brand" ? "active" : "")">
                     <a asp-controller="Brand" asp-action="Index" class="menu-link">
-                        <div data-i18n="Notifications">Hãng sản xuất</div>
+                        <div data-i18n="Notifications">Thương hiệu </div>
                     </a>
                 </li>
+                <li class="menu-item @(currentController == "Category" ? "active" : "")">
+                    <a asp-controller="Category" asp-action="Index" class="menu-link">
+                        <div data-i18n="Notifications">Category</div>
+                    </a>
+                </li>
+                <li class="menu-item @(currentController == "ProductImport" ? "active" : "")">
+                    <a asp-area="Admin"
+                       asp-controller="ProductImport"
+                       asp-action="Index"
+                       class="menu-link">
+                        <div>Lịch sử nhập hàng</div>
+                    </a>
+                </li>
+
+
             </ul>
         </li>
 

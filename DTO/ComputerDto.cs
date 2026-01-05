@@ -18,6 +18,7 @@ namespace WebBanMayTinh.Models.DTO
             public DateOnly? CreateAt { get; set; }
             
             public Guid? CategoriesId { get; set; }
+            public int? BrandId { get; set; }
 
             public string? Description { get; set; }
 

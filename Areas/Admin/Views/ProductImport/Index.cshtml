@@ -1,0 +1,38 @@
+﻿@model IEnumerable<WebBanMayTinh.Models.ProductImport>
+
+@{
+    ViewData["Title"] = "Lịch sử nhập hàng";
+}
+
+<h3 class="mb-4">📦 Lịch sử nhập hàng</h3>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Số lượng nhập</th>
+            <th>Ngày nhập</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="3" class="text-center text-muted">
+                    Chưa có dữ liệu nhập hàng
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Product?.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.ImportDate.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

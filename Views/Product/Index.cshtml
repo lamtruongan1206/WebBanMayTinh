@@ -106,10 +106,10 @@
 
                 <div class="col-md-3">
                     <input type="text"
-                           name="searchManufacturer"
-                           value="@ViewBag.SearchManufacturer"
+                           name="searchBrand"
+                           value="@ViewBag.SearchBrand"
                            class="form-control"
-                           placeholder="Hãng sản xuất" />
+                           placeholder="Thương hiệu" />
                 </div>
 
                 <div class="col-md-2">
@@ -117,7 +117,7 @@
                            name="priceFrom"
                            value="@ViewBag.PriceFrom"
                            class="form-control"
-                           placeholder="Giá từ" />
+                           placeholder= "Giá từ" min="0" />
                 </div>
 
                 <div class="col-md-2">
@@ -125,7 +125,7 @@
                            name="priceTo"
                            value="@ViewBag.PriceTo"
                            class="form-control"
-                           placeholder="Giá đến" />
+                           placeholder="Giá đến" min="0" />
                 </div>
 
                 <div class="col-md-2">
@@ -139,13 +139,15 @@
             <div class="row">
                 @foreach (var item in Model)
                 {
+                    bool isOutOfStock = item.Quantity <= 0;
+
                     var mainImage =
                     item.Images?.FirstOrDefault(i => i.IsMain)?.Url
                     ?? item.Images?.FirstOrDefault()?.Url
                     ?? "~/images/default.png";
 
                     <div class="col-md-6 mb-4">
-                        <div class="card shadow-sm border-0 d-flex flex-row h-100">
+                        <div class="card shadow-sm border-0 d-flex flex-row h-100)">
 
                             <!-- IMAGE -->
                             <div class="bg-light d-flex align-items-center justify-content-center"
@@ -162,8 +164,13 @@
                                 <div>
                                     <h5 class="fw-bold text-primary">@item.Name</h5>
 
+                                    @if (isOutOfStock)
+                                    {
+                                        <span class="badge bg-danger mb-2">Hết hàng</span>
+                                    }
+
                                     <p class="mb-1">
-                                        <strong>Hãng:</strong> @item.Manufacturer
+                                        <strong>Thương hiệu:</strong> @item.Brand?.Name
                                     </p>
 
                                     <p class="mb-1">
@@ -183,32 +190,46 @@
                                 <!-- ACTION BUTTONS -->
                                 <div class="btn-group mt-3 w-100">
 
+                                    <!-- Luôn xem được chi tiết -->
                                     <a asp-action="Detail"
                                        asp-route-id="@item.Id"
                                        class="btn btn-info btn-sm">
                                         Chi tiết
                                     </a>
 
-                                    <a asp-controller="Cart"
-                                       asp-action="Add"
-                                       asp-route-productId="@item.Id"
-                                       class="btn btn-success btn-sm">
-                                        Thêm giỏ
-                                    </a>
+                                    @if (!isOutOfStock)
+                                    {
+                                        <a asp-controller="Cart"
+                                           asp-action="Add"
+                                           asp-route-productId="@item.Id"
+                                           class="btn btn-success btn-sm">
+                                            Thêm giỏ
+                                        </a>
 
-                                    <a asp-controller="Product"
-                                       asp-action="BuyNow"
-                                       asp-route-productId="@item.Id"
-                                       class="btn btn-danger btn-sm">
-                                        Mua ngay
-                                    </a>
+                                        <a asp-controller="Product"
+                                           asp-action="BuyNow"
+                                           asp-route-productId="@item.Id"
+                                           class="btn btn-danger btn-sm">
+                                            Mua ngay
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-secondary btn-sm" disabled>
+                                            Thêm giỏ
+                                        </button>
+
+                                        <button class="btn btn-secondary btn-sm" disabled>
+                                            Mua ngay
+                                        </button>
+                                    }
 
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 }
+
             </div>
 
             <!-- ===== PAGINATION ===== -->
@@ -288,4 +309,11 @@
     .btn-group .btn {
         border-radius: 6px !important;
     }
+
+    .disabled-btn {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+
 </style>
