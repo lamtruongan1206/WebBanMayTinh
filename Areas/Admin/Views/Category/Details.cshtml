@@ -1,0 +1,21 @@
+﻿@model Category
+
+<h2>Chi tiết danh mục</h2>
+
+<table class="table">
+    <tr>
+        <th>Tên</th>
+        <td>@Model.Name</td>
+    </tr>
+    <tr>
+        <th>Mô tả</th>
+        <td>@Model.Description</td>
+    </tr>
+    <tr>
+        <th>Ngày tạo</th>
+        <td>@Model.CreateAt</td>
+    </tr>
+</table>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Sửa</a>
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

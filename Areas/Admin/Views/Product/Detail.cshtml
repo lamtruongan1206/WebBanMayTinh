@@ -26,8 +26,8 @@
                     <td>@Model.Name</td>
                 </tr>
                 <tr>
-                    <th>Hãng sản xuất</th>
-                    <td>@Model.Manufacturer</td>
+                    <th>Thương hiệu </th>
+                    <td>@Model.Brand?.Name</td>
                 </tr>
                 <tr>
                     <th>Giá</th>
@@ -61,12 +61,14 @@
 
     <!-- Ảnh phụ -->
     <div class="row mt-4">
-        <div class="col">
+        <div class="col d-flex flex-wrap">
             @if (Model.Images != null && Model.Images.Any(i => !i.IsMain))
             {
                 foreach (var img in Model.Images.Where(i => !i.IsMain))
                 {
-                    <img src="@img.Url" alt="Ảnh phụ" class="img-thumbnail me-2 mb-2" style="width:150px; height:150px; object-fit:cover;" />
+                    <img src="@img.Url" alt="Ảnh phụ"
+                         class="img-thumbnail me-2 mb-2"
+                         style="width:150px; height:150px; object-fit:cover;" />
                 }
             }
             else
@@ -75,6 +77,7 @@
             }
         </div>
     </div>
+
 
     <!-- Sản phẩm liên quan -->
     @if (relatedProducts != null && relatedProducts.Any())

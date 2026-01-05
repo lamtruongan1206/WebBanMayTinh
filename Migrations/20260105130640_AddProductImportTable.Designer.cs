@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBanMayTinh.Models;
 
@@ -11,9 +12,11 @@ using WebBanMayTinh.Models;
 namespace WebBanMayTinh.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class ShopBanMayTinhContextModelSnapshot : ModelSnapshot
+    [Migration("20260105130640_AddProductImportTable")]
+    partial class AddProductImportTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

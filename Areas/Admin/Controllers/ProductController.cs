@@ -16,12 +16,14 @@ namespace WebBanMayTinh.Areas.Controllers
         DataContext _context = new DataContext();
 
         [HasPermission(CustomClaimTypes.Permission, Permissions.ProductRead)]
-        public IActionResult Index(string searchName, string searchManufacturer, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
+        public IActionResult Index(string searchName, string searchBrand, decimal? priceFrom, decimal? priceTo, int page = 1, int pageSize = 6)
         {
             // Lấy dữ liệu cơ bản
             var query = _context.Products
-                .Include(c => c.Category)
-                .Include(c => c.Images)
+                .AsNoTracking()
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Images.Where(i => i.IsMain))
                 .AsQueryable();
 
             // Lọc theo tên
@@ -30,10 +32,11 @@ namespace WebBanMayTinh.Areas.Controllers
                 query = query.Where(c => c.Name.Contains(searchName));
             }
 
-            // Lọc theo hãng sản xuất
-            if (!string.IsNullOrEmpty(searchManufacturer))
+            // Lọc theo brand
+            if (!string.IsNullOrEmpty(searchBrand))
             {
-                query = query.Where(c => c.Manufacturer.Contains(searchManufacturer));
+                query = query.Where(c => c.Brand != null &&
+                                         c.Brand.Name.Contains(searchBrand));
             }
 
             // Lọc theo khoảng giá
@@ -58,7 +61,7 @@ namespace WebBanMayTinh.Areas.Controllers
 
             // Truyền lại các giá trị tìm kiếm để giữ trên form
             ViewBag.SearchName = searchName;
-            ViewBag.SearchManufacturer = searchManufacturer;
+            ViewBag.SearchBrand = searchBrand;
             ViewBag.PriceFrom = priceFrom;
             ViewBag.PriceTo = priceTo;
 
@@ -70,7 +73,7 @@ namespace WebBanMayTinh.Areas.Controllers
         public IActionResult Add()
         {
             ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name");
-            ViewBag.Brands = new SelectList(_context.Brand, "Id", "Name");
+            ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name");
             return View(new ProductCreateVM());
         }
 
@@ -84,11 +87,22 @@ namespace WebBanMayTinh.Areas.Controllers
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoryId);
                 return View(dto);
             }
+            if (ModelState.IsValid)
+            {
+                ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", dto.BrandId);
+                return View(dto);
+            }
 
-            if (dto.CategoryId == null || !_context.Categories.Any(c => c.Id == dto.CategoryId))
+                if (dto.CategoryId == null || !_context.Categories.Any(c => c.Id == dto.CategoryId))
             {
                 ModelState.AddModelError("CategoriesId", "Danh mục không tồn tại");
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoryId);
+                return View(dto);
+            }
+                if(dto.BrandId == null || !_context.Brand.Any(b => b.Id == dto.BrandId))
+            {
+                ModelState.AddModelError("BrandId", "Thương hiệu không tồn tại");
+                ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", dto.BrandId);
                 return View(dto);
             }
 
@@ -101,6 +115,7 @@ namespace WebBanMayTinh.Areas.Controllers
                 Quantity = dto.Quantity,
                 Description = dto.Description,
                 CategoryId = dto.CategoryId,
+                BrandId = dto.BrandId,
                 CreateAt = DateOnly.FromDateTime(DateTime.Now),
                 UpdateAt = DateOnly.FromDateTime(DateTime.Now)
             };
@@ -170,7 +185,7 @@ namespace WebBanMayTinh.Areas.Controllers
             if (computer == null) return NotFound();
 
             ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", computer.CategoryId);
-            ViewBag.Brands = new SelectList(_context.Brand, "Id", "Name", computer.BrandId);
+            ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", computer.BrandId);
 
             ViewBag.ComputerId = computer.Id;
             ViewBag.MainImage = computer.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
@@ -181,7 +196,8 @@ namespace WebBanMayTinh.Areas.Controllers
                 Price = computer.Price,
                 Quantity = computer.Quantity,
                 Description = computer.Description,
-                CategoriesId = computer.CategoryId
+                CategoriesId = computer.CategoryId,
+                BrandId = computer.BrandId
             };
             return View(dto);
         }
@@ -199,6 +215,7 @@ namespace WebBanMayTinh.Areas.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoriesId);
+                ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", dto.BrandId);
                 ViewBag.MainImage = computer.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
                 return View("Update", dto);
             }
@@ -209,6 +226,7 @@ namespace WebBanMayTinh.Areas.Controllers
             computer.Quantity = dto.Quantity;
             computer.Description = dto.Description;
             computer.CategoryId = dto.CategoriesId;
+            computer.BrandId = dto.BrandId;
             computer.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
 
             string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -285,6 +303,8 @@ namespace WebBanMayTinh.Areas.Controllers
         {
             var computer = _context.Products
                 .Include(c => c.Images)
+                .Include(c=> c.Brand)
+                .Include(c => c.Category)
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();
@@ -313,6 +333,7 @@ namespace WebBanMayTinh.Areas.Controllers
             var computer = _context.Products
                 .Include(c => c.Images)
                 .Include(c => c.Category)
+                .Include(c => c.Brand)
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();
@@ -320,7 +341,7 @@ namespace WebBanMayTinh.Areas.Controllers
             // Lấy sản phẩm liên quan: chỉ ảnh chính
             var relatedProducts = _context.Products
                 .Where(p => p.Id != id &&
-                            (p.CategoryId == computer.CategoryId || p.Manufacturer == computer.Manufacturer))
+                            (p.CategoryId == computer.CategoryId || p.BrandId == computer.BrandId))
                 .Select(p => new
                 {
                     Product = p,
@@ -340,6 +361,57 @@ namespace WebBanMayTinh.Areas.Controllers
 
             return View(computer);
         }
+
+        [HttpGet]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductUpdate)]
+        public IActionResult Import(Guid productId)
+        {
+            var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+            if (product == null) return NotFound();
+
+            var vm = new ProductImportVM
+            {
+                ProductId = product.Id,
+                ProductName = product.Name
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductUpdate)]
+        public IActionResult Import(ProductImportVM vm)
+        {
+            if (vm.Quantity <= 0)
+            {
+                ModelState.AddModelError("Quantity", "Số lượng nhập phải > 0");
+                return View(vm);
+            }
+
+            var product = _context.Products.FirstOrDefault(p => p.Id == vm.ProductId);
+            if (product == null) return NotFound();
+
+            // 1️⃣ Cộng thêm số lượng
+            product.Quantity += vm.Quantity;
+            product.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
+
+            // 2️⃣ Lưu lịch sử nhập kho
+            var import = new ProductImport
+            {
+                Id = Guid.NewGuid(),
+                ProductId = product.Id,
+                Quantity = vm.Quantity,
+                ImportDate = DateTime.Now
+            };
+
+            _context.ProductImports.Add(import);
+            _context.SaveChanges();
+
+            TempData["Success"] = "Nhập hàng thành công";
+            return RedirectToAction("Index");
+        }
+
 
     }
 }

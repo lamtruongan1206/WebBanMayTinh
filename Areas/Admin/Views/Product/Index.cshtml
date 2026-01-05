@@ -19,7 +19,7 @@
             <input type="text" name="searchName" value="@ViewBag.SearchName" class="form-control" placeholder="Tên máy" />
         </div>
         <div class="col-md-3">
-            <input type="text" name="searchManufacturer" value="@ViewBag.SearchManufacturer" class="form-control" placeholder="Hãng sản xuất" />
+            <input type="text" name="searchBrand" value="@ViewBag.SearchBrand" class="form-control" placeholder="Thương hiệu" />
         </div>
         <div class="col-md-2">
             <input type="number" name="priceFrom" value="@ViewBag.PriceFrom" class="form-control" placeholder="Giá từ" min="0" />
@@ -54,13 +54,20 @@
                     <div class="card-body d-flex flex-column justify-content-between" style="flex: 1;">
                         <div>
                             <h5 class="card-title text-primary fw-bold">@item.Name</h5>
-                            <p class="card-text mb-2"><strong>Hãng:</strong> @item.Manufacturer</p>
+                            <p class="card-text mb-2"><strong>Thương hiệu:</strong> @item.Brand?.Name</p>
                             <p class="card-text mb-2"><strong>Giá:</strong> @String.Format("{0:N0} ₫", item.Price)</p>
                             <p class="card-text mb-2"><strong>Số lượng:</strong> @item.Quantity</p>
                             <p class="card-text mb-2"><strong>Danh mục:</strong> @item.Category?.Name</p>
                         </div>
 
                         <div class="btn-group mt-2" role="group">
+                            <a asp-area="Admin"
+                               asp-controller="Product"
+                               asp-action="Import"
+                               asp-route-productId="@item.Id"
+                               class="btn btn-sm btn-primary">
+                                Nhập hàng
+                            </a>
                             <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Cập nhật</a>
                             <a asp-action="Detail" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Chi tiết</a>
                             <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>

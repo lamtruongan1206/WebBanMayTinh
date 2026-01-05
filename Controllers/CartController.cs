@@ -43,8 +43,9 @@ namespace WebBanMayTinh.Controllers
             var product = _context.Products.Find(productId);
             if (product == null || product.Quantity <= 0)
             {
-                TempData["Error"] = "Sản phẩm đã hết hàng!";
+               
                 return RedirectToAction("Index", "Product");
+                TempData["Error"] = "Sản phẩm đã hết hàng!";
             }
 
             var cart = _context.Carts
@@ -87,6 +88,8 @@ namespace WebBanMayTinh.Controllers
         {
             var user = _userManager.GetUserAsync(User).Result;
             if (user == null) return Redirect("/Account/Login");
+
+            UpdateCartSession(); // ⭐ FIX CHÍNH Ở ĐÂY
 
             var carts = _context.Carts
                 .Include(c => c.Product)

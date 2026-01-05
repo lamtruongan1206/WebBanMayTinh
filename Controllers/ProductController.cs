@@ -23,7 +23,7 @@ namespace WebBanMayTinh.Controllers
         // ================== INDEX ==================
         public IActionResult Index(
     string? searchName,
-    string? searchManufacturer,
+    string? searchBrand,
     decimal? priceFrom,
     decimal? priceTo,
     Guid? categoryId,
@@ -36,6 +36,7 @@ namespace WebBanMayTinh.Controllers
             var query = _context.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
+                .Include(p => p.Brand)
                 .Include(p => p.Images.Where(i => i.IsMain))
                 .AsQueryable();
 
@@ -43,8 +44,11 @@ namespace WebBanMayTinh.Controllers
             if (!string.IsNullOrEmpty(searchName))
                 query = query.Where(p => p.Name.Contains(searchName));
 
-            if (!string.IsNullOrEmpty(searchManufacturer))
-                query = query.Where(p => p.Manufacturer.Contains(searchManufacturer));
+            if (!string.IsNullOrEmpty(searchBrand))
+            {
+                query = query.Where(c => c.Brand != null &&
+                                         c.Brand.Name.Contains(searchBrand));
+            }
 
             if (priceFrom.HasValue)
                 query = query.Where(p => p.Price >= priceFrom.Value);
@@ -78,7 +82,7 @@ namespace WebBanMayTinh.Controllers
 
             // 6️⃣ ViewBag cho form + paging
             ViewBag.SearchName = searchName;
-            ViewBag.SearchManufacturer = searchManufacturer;
+            ViewBag.SearchBrand = searchBrand;
             ViewBag.PriceFrom = priceFrom;
             ViewBag.PriceTo = priceTo;
             ViewBag.CurrentPage = page;
@@ -102,6 +106,7 @@ namespace WebBanMayTinh.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoryId);
+                ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", dto.BrandId);
                 return View(dto);
             }
 
@@ -109,6 +114,12 @@ namespace WebBanMayTinh.Controllers
             {
                 ModelState.AddModelError("CategoriesId", "Danh mục không tồn tại");
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoryId);
+                return View(dto);
+            }
+            if (dto.BrandId == null || !_context.Brand.Any(b => b.Id == dto.BrandId))
+            {
+                ModelState.AddModelError("BrandId", "Thương hiệu không tồn tại");
+                ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", dto.BrandId);
                 return View(dto);
             }
 
@@ -121,6 +132,7 @@ namespace WebBanMayTinh.Controllers
                 Quantity = dto.Quantity,
                 Description = dto.Description,
                 CategoryId = dto.CategoryId,
+                BrandId = dto.BrandId,
                 CreateAt = DateOnly.FromDateTime(DateTime.Now),
                 UpdateAt = DateOnly.FromDateTime(DateTime.Now)
             };
@@ -186,6 +198,7 @@ namespace WebBanMayTinh.Controllers
             if (computer == null) return NotFound();
 
             ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", computer.CategoryId);
+            ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", computer.BrandId);
             ViewBag.ComputerId = computer.Id;
             ViewBag.MainImage = computer.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
             var dto = new ComputerDto
@@ -195,7 +208,8 @@ namespace WebBanMayTinh.Controllers
                 Price = computer.Price,
                 Quantity = computer.Quantity,
                 Description = computer.Description,
-                CategoriesId = computer.CategoryId
+                CategoriesId = computer.CategoryId,
+                BrandId = computer.BrandId
             };
             return View(dto);
         }
@@ -211,6 +225,7 @@ namespace WebBanMayTinh.Controllers
 
             if (!ModelState.IsValid)
             {
+                ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", dto.BrandId);
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoriesId);
                 ViewBag.MainImage = computer.Images?.FirstOrDefault(i => i.IsMain)?.Url ?? "/images/default.png";
                 return View("Update" , dto);
@@ -222,6 +237,7 @@ namespace WebBanMayTinh.Controllers
             computer.Quantity = dto.Quantity;
             computer.Description = dto.Description;
             computer.CategoryId = dto.CategoriesId;
+            computer.BrandId = dto.BrandId;
             computer.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
 
             string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -320,6 +336,8 @@ namespace WebBanMayTinh.Controllers
             var computer = _context.Products
                 .Include(c => c.Images)
                 .Include(c => c.Category)
+                .Include(c => c.Brand)
+                .Include(c => c.Specifications)
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();
@@ -327,7 +345,7 @@ namespace WebBanMayTinh.Controllers
             // Lấy sản phẩm liên quan: chỉ ảnh chính
             var relatedProducts = _context.Products
                 .Where(p => p.Id != id &&
-                            (p.CategoryId == computer.CategoryId || p.Manufacturer == computer.Manufacturer))
+                            (p.CategoryId == computer.CategoryId || p.BrandId == computer.BrandId))
                 .Select(p => new
                 {
                     Product = p,

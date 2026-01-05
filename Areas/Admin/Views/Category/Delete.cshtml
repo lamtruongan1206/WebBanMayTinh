@@ -1,0 +1,14 @@
+﻿@model Category
+
+<h2>Xóa danh mục</h2>
+
+<div class="alert alert-danger">
+    Bạn có chắc chắn muốn xóa danh mục <strong>@Model.Name</strong> không?
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>
