@@ -1,8 +1,8 @@
 ﻿@model WebBanMayTinh.Areas.Admin.Models.Views.ProductImportVM
 
-<h3>Nhập hàng</h3>
+<h3>📦 Nhập hàng</h3>
 
-<form asp-action="Import" method="post">
+<form asp-action="Import" method="post" class="mb-4">
     <input type="hidden" asp-for="ProductId" />
 
     <div class="mb-3">
@@ -19,3 +19,40 @@
     <button class="btn btn-success">Nhập kho</button>
     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
 </form>
+
+<hr />
+
+<h4 class="mt-4">📜 Lịch sử nhập hàng</h4>
+
+<table class="table table-bordered table-hover mt-3">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Số lượng</th>
+            <th>Ngày nhập</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.ImportHistories == null || !Model.ImportHistories.Any())
+        {
+            <tr>
+                <td colspan="3" class="text-center text-muted">
+                    Chưa có lịch sử nhập hàng
+                </td>
+            </tr>
+        }
+        else
+        {
+            int index = 1;
+            foreach (var item in Model.ImportHistories)
+            {
+                <tr>
+                    <td>@index</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.ImportDate.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+                index++;
+            }
+        }
+    </tbody>
+</table>

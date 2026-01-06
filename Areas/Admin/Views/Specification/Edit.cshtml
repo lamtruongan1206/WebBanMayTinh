@@ -1,0 +1,28 @@
+﻿@model WebBanMayTinh.Models.Specification
+
+<h3>@(Model.Id == Guid.Empty ? "Thêm thông số" : "Cập nhật thông số")</h3>
+
+<form method="post">
+    <input type="hidden" asp-for="ProductId" />
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Tên thông số</label>
+        <input asp-for="Name" class="form-control" placeholder="VD: CPU, RAM, SSD" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Giá trị</label>
+        <input asp-for="Value" class="form-control"
+               placeholder="VD: i7-13620H / 16GB / 512GB NVMe" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Mô tả</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <button class="btn btn-success">Lưu</button>
+    <a asp-action="Index" asp-route-productId="@Model.ProductId"
+       class="btn btn-secondary">Hủy</a>
+</form>
