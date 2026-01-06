@@ -28,6 +28,7 @@ public partial class Product
     public virtual Brand? Brand { get; set; }
     public virtual Category? Category { get; set; }
 
+    public bool IsDeleted { get; set; } = false; // xóa mềm
     public virtual ICollection<BillDetail> BillDetails { get; set; } = new List<BillDetail>();
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
     public virtual ICollection<Image> Images { get; set; } = new List<Image>();

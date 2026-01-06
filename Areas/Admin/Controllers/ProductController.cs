@@ -24,6 +24,7 @@ namespace WebBanMayTinh.Areas.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.Images.Where(i => i.IsMain))
+                .Where(p => !p.IsDeleted)
                 .AsQueryable();
 
             // Lọc theo tên
@@ -298,32 +299,23 @@ namespace WebBanMayTinh.Areas.Controllers
         [HasPermission(CustomClaimTypes.Permission, Permissions.ProductDelete)]
         public IActionResult DeleteAction(Guid id)
         {
-            var computer = _context.Products
-                .Include(c => c.Images)
-                .Include(c=> c.Brand)
-                .Include(c => c.Category).Include(c => c.Carts)
-                .FirstOrDefault(c => c.Id == id);
+            var product = _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Brand)
+                .Include(p => p.Category)
+                .Include(p => p.Carts)
+                .FirstOrDefault(p => p.Id == id);
 
-            if (computer == null) return NotFound();
+            if (product == null) return NotFound();
 
-            string wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            // Soft delete
+            product.IsDeleted = true;
+            product.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
 
-            foreach (var img in computer.Images)
-            {
-                string fullPath = Path.Combine(wwwRoot, img.Url.TrimStart('/').Replace("/", "\\"));
-                if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
-            }
-            if (computer.Carts != null && computer.Carts.Any())
-            {
-                _context.Carts.RemoveRange(computer.Carts);
-            }
-            _context.Images.RemoveRange(computer.Images);
-            _context.Products.Remove(computer);
             _context.SaveChanges();
 
             return RedirectToAction("Index");
         }
-
 
         // ==================== DETAIL ===============
         [HttpGet]

@@ -38,6 +38,7 @@ namespace WebBanMayTinh.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.Images.Where(i => i.IsMain))
+                .Where(p => !p.IsDeleted)
                 .AsQueryable();
 
             // 2️⃣ Filter
