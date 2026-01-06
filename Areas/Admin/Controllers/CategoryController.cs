@@ -105,10 +105,17 @@ namespace WebBanMayTinh.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(Guid id)
         {
-            var category = _context.Categories.Find(id);
+            var category = _context.Categories
+       .Include(c => c.Products)
+       .FirstOrDefault(c => c.Id == id);
 
-            if (category == null)
-                return NotFound();
+            if (category == null) return NotFound();
+
+            // Set CategoryId của các product liên quan về null
+            foreach (var product in category.Products)
+            {
+                product.CategoryId = null;
+            }
 
             _context.Categories.Remove(category);
             _context.SaveChanges();

@@ -163,15 +163,31 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandDelete)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var brand = await _context.Brand.FindAsync(id);
-            if (brand != null)
+            // Lấy Brand cùng các sản phẩm liên quan
+            var brand = await _context.Brand
+                .Include(b => b.Products)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (brand == null) return NotFound();
+
+            // Set BrandId của các product liên quan = null
+            if (brand.Products != null && brand.Products.Any())
             {
-                _context.Brand.Remove(brand);
+                foreach (var product in brand.Products)
+                {
+                    product.BrandId = null;
+                }
             }
 
+            // Xóa Brand
+            _context.Brand.Remove(brand);
+
             await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Xóa thương hiệu thành công, các sản phẩm vẫn giữ nguyên.";
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool BrandExists(int id)
         {
