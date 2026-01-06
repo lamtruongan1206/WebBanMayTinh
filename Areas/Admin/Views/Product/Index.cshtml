@@ -70,6 +70,13 @@
                             </a>
                             <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Cập nhật</a>
                             <a asp-action="Detail" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Chi tiết</a>
+                            <a asp-area="Admin"
+                               asp-controller="Specification"
+                               asp-action="Index"
+                               asp-route-productId="@item.Id"
+                               class="btn btn-sm btn-dark">
+                                Thông số
+                            </a>
                             <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>
                         </div>
                     </div>

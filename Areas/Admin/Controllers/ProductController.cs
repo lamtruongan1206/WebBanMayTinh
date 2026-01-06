@@ -170,7 +170,11 @@ namespace WebBanMayTinh.Areas.Controllers
             }
 
             _context.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction(
+                     "Index",
+                      "Specification",
+                  new { area = "Admin", productId = product.Id });
+            //return RedirectToAction("Index");
         }
 
         // ================== UPDATE ==================
@@ -194,7 +198,7 @@ namespace WebBanMayTinh.Areas.Controllers
                 Name = computer.Name,
                 Manufacturer = computer.Manufacturer,
                 Price = computer.Price,
-                Quantity = computer.Quantity,
+              //  Quantity = computer.Quantity,
                 Description = computer.Description,
                 CategoriesId = computer.CategoryId,
                 BrandId = computer.BrandId
@@ -223,7 +227,7 @@ namespace WebBanMayTinh.Areas.Controllers
             computer.Name = dto.Name;
             computer.Manufacturer = dto.Manufacturer;
             computer.Price = dto.Price;
-            computer.Quantity = dto.Quantity;
+           // computer.Quantity = dto.Quantity;
             computer.Description = dto.Description;
             computer.CategoryId = dto.CategoriesId;
             computer.BrandId = dto.BrandId;
@@ -334,6 +338,7 @@ namespace WebBanMayTinh.Areas.Controllers
                 .Include(c => c.Images)
                 .Include(c => c.Category)
                 .Include(c => c.Brand)
+                .Include(c => c.Specifications)
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();
@@ -364,16 +369,23 @@ namespace WebBanMayTinh.Areas.Controllers
 
         [HttpGet]
         [HasPermission(CustomClaimTypes.Permission, Permissions.ProductUpdate)]
-        public IActionResult Import(Guid productId)
+        public IActionResult Import(Guid Id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+            var product = _context.Products.FirstOrDefault(p => p.Id == Id);
             if (product == null) return NotFound();
 
             var vm = new ProductImportVM
             {
                 ProductId = product.Id,
-                ProductName = product.Name
+                ProductName = product.Name,
+
+                // 👇 LOAD LỊCH SỬ NHẬP
+                ImportHistories = _context.ProductImports
+          .Where(x => x.ProductId == product.Id)
+          .OrderByDescending(x => x.ImportDate)
+          .ToList()
             };
+
 
             return View(vm);
         }
@@ -392,11 +404,11 @@ namespace WebBanMayTinh.Areas.Controllers
             var product = _context.Products.FirstOrDefault(p => p.Id == vm.ProductId);
             if (product == null) return NotFound();
 
-            // 1️⃣ Cộng thêm số lượng
+            // 1️ Cộng thêm số lượng
             product.Quantity += vm.Quantity;
             product.UpdateAt = DateOnly.FromDateTime(DateTime.Now);
 
-            // 2️⃣ Lưu lịch sử nhập kho
+            // 2️ Lưu lịch sử nhập kho
             var import = new ProductImport
             {
                 Id = Guid.NewGuid(),

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBanMayTinh.Models;
 
@@ -11,9 +12,11 @@ using WebBanMayTinh.Models;
 namespace WebBanMayTinh.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class ShopBanMayTinhContextModelSnapshot : ModelSnapshot
+    [Migration("20260105135928_ChangeSpecificationValueToString")]
+    partial class ChangeSpecificationValueToString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -430,28 +433,6 @@ namespace WebBanMayTinh.Migrations
                     b.ToTable("Images");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.Invoice", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("Invoices");
-                });
-
             modelBuilder.Entity("WebBanMayTinh.Models.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -478,12 +459,6 @@ namespace WebBanMayTinh.Migrations
 
                     b.Property<bool>("IsReceived")
                         .HasColumnType("bit");
-
-                    b.Property<bool>("IsReviewed")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -544,28 +519,6 @@ namespace WebBanMayTinh.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.OrderStatusHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("OrderStatus")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderStatusHistories");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.PasswordOtp", b =>
@@ -660,71 +613,6 @@ namespace WebBanMayTinh.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductImports");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.ProductReview", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Comment")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProductReviews");
-                });
-
-            modelBuilder.Entity("WebBanMayTinh.Models.Slider", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Sliders");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.Specification", b =>
@@ -864,17 +752,6 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.Invoice", b =>
-                {
-                    b.HasOne("WebBanMayTinh.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("WebBanMayTinh.Models.Order", b =>
                 {
                     b.HasOne("WebBanMayTinh.Models.Address", "Address")
@@ -913,17 +790,6 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.OrderStatusHistory", b =>
-                {
-                    b.HasOne("WebBanMayTinh.Models.Order", "Order")
-                        .WithMany("OrderStatusHistories")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("WebBanMayTinh.Models.Product", b =>
                 {
                     b.HasOne("WebBanMayTinh.Models.Brand", "Brand")
@@ -950,33 +816,6 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("WebBanMayTinh.Models.ProductReview", b =>
-                {
-                    b.HasOne("WebBanMayTinh.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebBanMayTinh.Models.Product", "Product")
-                        .WithMany("ProductReviews")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebBanMayTinh.Models.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("WebBanMayTinh.Models.Specification", b =>
                 {
                     b.HasOne("WebBanMayTinh.Models.Product", "Product")
@@ -994,8 +833,6 @@ namespace WebBanMayTinh.Migrations
             modelBuilder.Entity("WebBanMayTinh.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
-
-                    b.Navigation("OrderStatusHistories");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.Product", b =>
@@ -1007,8 +844,6 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("OrderItems");
-
-                    b.Navigation("ProductReviews");
 
                     b.Navigation("Specifications");
                 });

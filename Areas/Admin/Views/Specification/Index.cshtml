@@ -1,0 +1,55 @@
+﻿@model IEnumerable<WebBanMayTinh.Models.Specification>
+
+<h3>⚙️ Thông số kỹ thuật</h3>
+<p class="text-muted">Sản phẩm: <strong>@ViewBag.ProductName</strong></p>
+
+<a asp-action="Create"
+   asp-route-productId="@ViewBag.ProductId"
+   class="btn btn-success mb-3">
+    + Thêm thông số
+</a>
+
+<table class="table table-bordered align-middle">
+    <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Giá trị</th>
+            <th>Mô tả</th>
+            <th width="160"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="4" class="text-center text-muted">
+                    Chưa có thông số kỹ thuật
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var s in Model)
+            {
+                <tr>
+                    <td>@s.Name</td>
+                    <td>@s.Value</td>
+                    <td>@s.Description</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@s.Id" method="post" style="display:inline">
+                            <button class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Xóa thông số này?')">
+                                Xóa
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<a asp-controller="Product" asp-action="Index" class="btn btn-secondary">
+    ← Quay lại danh sách sản phẩm
+</a>
