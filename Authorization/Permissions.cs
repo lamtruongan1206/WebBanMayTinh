@@ -12,6 +12,7 @@ namespace WebBanMayTinh.Authorization
         public const string UserCreate = "user:create";
         public const string UserUpdate = "user:update";
         public const string UserDelete = "user:delete";
+        public const string UserPermission = "user:permission";
         public const string UserRead = "user:read";
 
         public const string ProductAccess = "product:access";
@@ -31,6 +32,30 @@ namespace WebBanMayTinh.Authorization
         public const string OrderUpdate = "order:update";
         public const string OrderDelete = "order:delete";
         public const string OrderRead = "order:read";
+
+        public const string InvoiceAccess = "invoice:access";
+        public const string InvoiceCreate = "invoice:create";
+        public const string InvoiceUpdate = "invoice:update";
+        public const string InvoiceDelete = "invoice:delete";
+        public const string InvoiceRead = "invoice:read";
+
+        public const string SliderAccess = "slider:access";
+        public const string SliderCreate = "slider:create";
+        public const string SliderUpdate = "slider:update";
+        public const string SliderDelete = "slider:delete";
+        public const string SliderRead = "slider:read";
+
+        public const string CategoryAccess = "category:access";
+        public const string CategoryCreate = "category:create";
+        public const string CategoryUpdate = "category:update";
+        public const string CategoryDelete = "category:delete";
+        public const string CategoryRead = "category:read";
+
+        public const string ProductImportAccess = "product_import:access";
+        public const string ProductImportCreate = "product_import:create";
+        public const string ProductImportUpdate = "product_import:update";
+        public const string ProductImportDelete = "product_import:delete";
+        public const string ProductImportRead = "product_import:read";
 
         public const string RoleAccess = "role:access";
         public const string RoleCreate = "role:create";

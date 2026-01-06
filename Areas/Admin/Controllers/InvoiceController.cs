@@ -8,12 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Services;
 
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.InvoiceAccess)]
     public class InvoiceController : Controller
     {
         private readonly DataContext _context;
@@ -26,15 +28,14 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             _userService = userService;
             _emailSender = emailSender;
         }
-
-        // GET: Admin/Invoice
+        [HasPermission(CustomClaimTypes.Permission, Permissions.InvoiceRead)]
         public async Task<IActionResult> Index()
         {
             var dataContext = _context.Invoices.Include(i => i.Order);
             return View(await dataContext.ToListAsync());
         }
 
-        // GET: Admin/Invoice/Details/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.InvoiceRead)]
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -54,6 +55,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.InvoiceRead)]
         public async Task<IActionResult> ExportInvoice(Guid? id)
         {
             var staff = await _userService.GetCurrentUser();

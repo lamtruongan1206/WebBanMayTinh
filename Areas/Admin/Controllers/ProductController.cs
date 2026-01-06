@@ -411,7 +411,5 @@ namespace WebBanMayTinh.Areas.Controllers
             TempData["Success"] = "Nhập hàng thành công";
             return RedirectToAction("Index");
         }
-
-
     }
 }

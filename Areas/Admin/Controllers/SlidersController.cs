@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Common;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Utils;
 
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.SliderAccess)]
     public class SlidersController : Controller
     {
         private readonly DataContext _context;
@@ -21,13 +23,13 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             _context = context;
         }
 
-        // GET: Admin/Sliders
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderRead)]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Sliders.ToListAsync());
         }
 
-        // GET: Admin/Sliders/Details/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderRead)]
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -45,12 +47,14 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(slider);
         }
 
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderCreate)]
         public IActionResult Create()
         {
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderCreate)]
         public async Task<IActionResult> Create(Slider slider, IFormFile fileImage)
         {
             if (ModelState.IsValid)
@@ -65,6 +69,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(slider);
         }
 
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderUpdate)]
         public async Task<IActionResult> Edit(Guid? id)
         {
             if (id == null)
@@ -82,7 +87,8 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, Slider slider, IFormFile fileImage)
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderUpdate)]
+        public async Task<IActionResult> Edit(Guid id, Slider slider, IFormFile? fileImage)
         {
             if (id != slider.Id)
             {
@@ -93,8 +99,11 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             {
                 try
                 {
-                    var path = await FileUtils.Upload(fileImage);
-                    slider.ImageUrl = path;
+                    if (fileImage is not null)
+                    {
+                        var path = await FileUtils.Upload(fileImage);
+                        slider.ImageUrl = path;
+                    }
                     _context.Update(slider);
                     await _context.SaveChangesAsync();
                 }
@@ -114,7 +123,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(slider);
         }
 
-        // GET: Admin/Sliders/Delete/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderDelete)]
         public async Task<IActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -132,9 +141,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(slider);
         }
 
-        // POST: Admin/Sliders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.SliderDelete)]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var slider = await _context.Sliders.FindAsync(id);
@@ -146,7 +155,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         private bool SliderExists(Guid id)
         {
             return _context.Sliders.Any(e => e.Id == id);

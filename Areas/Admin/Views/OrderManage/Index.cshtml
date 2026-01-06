@@ -4,7 +4,7 @@
     ViewData["Title"] = "Danh sách đơn hàng";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
 
-    var count = 0;
+    var count = 0 + ((Model.CurrentPage - 1) * Model.PageSize);
     // var pager = ViewBag.Pagination as PaginationResult;
 }
 

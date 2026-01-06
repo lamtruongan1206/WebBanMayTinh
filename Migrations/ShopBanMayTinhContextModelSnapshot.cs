@@ -640,6 +640,28 @@ namespace WebBanMayTinh.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("WebBanMayTinh.Models.ProductImport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ImportDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImports");
+                });
+
             modelBuilder.Entity("WebBanMayTinh.Models.ProductReview", b =>
                 {
                     b.Property<Guid>("Id")
@@ -915,6 +937,17 @@ namespace WebBanMayTinh.Migrations
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("WebBanMayTinh.Models.ProductImport", b =>
+                {
+                    b.HasOne("WebBanMayTinh.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("WebBanMayTinh.Models.ProductReview", b =>

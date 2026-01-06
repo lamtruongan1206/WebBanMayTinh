@@ -226,7 +226,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                         throw;
                     }
                 }
-                return View(vm);
+                return RedirectToAction("Index");
             }
             return View(vm);
         }
@@ -268,6 +268,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.OrderUpdate)]
         public async Task<IActionResult> CancelRequest(Guid id)
         {
             var order = await _context.Orders.FindAsync(id);

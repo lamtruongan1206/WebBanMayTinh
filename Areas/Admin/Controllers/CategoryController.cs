@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 
 namespace WebBanMayTinh.Controllers
 {
 
     [Area("Admin")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryAccess)]
     public class CategoryController : Controller
     {
         private readonly DataContext _context;
@@ -16,6 +18,7 @@ namespace WebBanMayTinh.Controllers
         }
 
         // ================= INDEX =================
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryRead)]
         public IActionResult Index()
         {
             var categories = _context.Categories
@@ -27,6 +30,7 @@ namespace WebBanMayTinh.Controllers
         }
 
         // ================= DETAILS =================
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryRead)]
         public IActionResult Details(Guid id)
         {
             var category = _context.Categories
@@ -40,6 +44,7 @@ namespace WebBanMayTinh.Controllers
         }
 
         // ================= CREATE =================
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryCreate)]
         public IActionResult Create()
         {
             return View();
@@ -47,6 +52,7 @@ namespace WebBanMayTinh.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryCreate)]
         public IActionResult Create(Category category)
         {
             if (!ModelState.IsValid)
@@ -62,6 +68,7 @@ namespace WebBanMayTinh.Controllers
         }
 
         // ================= EDIT =================
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryUpdate)]
         public IActionResult Edit(Guid id)
         {
             var category = _context.Categories.Find(id);
@@ -74,6 +81,7 @@ namespace WebBanMayTinh.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryUpdate)]
         public IActionResult Edit(Guid id, Category category)
         {
             if (id != category.Id)
@@ -89,6 +97,7 @@ namespace WebBanMayTinh.Controllers
         }
 
         // ================= DELETE =================
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryDelete)]
         public IActionResult Delete(Guid id)
         {
             var category = _context.Categories
@@ -103,6 +112,7 @@ namespace WebBanMayTinh.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.CategoryDelete)]
         public IActionResult DeleteConfirmed(Guid id)
         {
             var category = _context.Categories.Find(id);

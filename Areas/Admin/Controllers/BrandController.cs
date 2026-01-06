@@ -23,14 +23,12 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             _context = context;
         }
 
-        // GET: Admin/Brand
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandRead)]
         public async Task<IActionResult> Index()
         {   
             return View(await _context.Brand.ToListAsync());
         }
 
-        // GET: Admin/Brand/Details/5
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandRead)]
         public async Task<IActionResult> Details(int? id)
         {
@@ -49,16 +47,12 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(brand);
         }
 
-        // GET: Admin/Brand/Create
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandCreate)]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Admin/Brand/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandCreate)]
@@ -85,7 +79,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(brand);
         }
 
-        // GET: Admin/Brand/Edit/5
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandUpdate)]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -102,9 +95,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(brand);
         }
 
-        // POST: Admin/Brand/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandUpdate)]
@@ -138,7 +128,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(brand);
         }
 
-        // GET: Admin/Brand/Delete/5
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandDelete)]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -157,7 +146,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(brand);
         }
 
-        // POST: Admin/Brand/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [HasPermission(CustomClaimTypes.Permission, Permissions.BrandDelete)]
@@ -172,7 +160,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         private bool BrandExists(int id)
         {
             return _context.Brand.Any(e => e.Id == id);

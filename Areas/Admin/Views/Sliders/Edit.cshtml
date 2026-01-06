@@ -14,6 +14,8 @@
         <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ImageUrl"/>
+
             <div class="form-group mb-2">
                 <label  class="control-label">Chọn ảnh</label>
                 <input type="file"

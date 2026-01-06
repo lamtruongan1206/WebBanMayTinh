@@ -54,17 +54,7 @@ builder.Services.AddAuthentication()
         options.CallbackPath = "/signin-google";
     });
 
-
-//builder.Services.AddAuthorization(options =>
-//{
-//    options.AddPolicy(Permissions.UserRead, policy =>
-//    policy.RequirePermission(Permissions.UserRead));
-//    options.AddPolicy(Permissions.RoleAccess, policy =>
-//    policy.RequirePermission(Permissions.RoleAccess));
-//});
-
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
-
 
 builder.Services.Configure<IdentityOptions>(options =>
 {

@@ -11,7 +11,7 @@ using WebBanMayTinh.Models;
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Policy = $"permission:{Permissions.RoleAccess}")]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.RoleAccess)]
     public class RoleController : Controller
     {
         private DataContext context;
@@ -21,20 +21,20 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             this.context = context;
             this.roleManager = roleManager;
         }
-        // GET: RoleController
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleRead)]
         public ActionResult Index()
         {
             var roles = context.Roles.ToList();
             return View(roles);
         }
 
-        // GET: RoleController/Details/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleRead)]
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: RoleController/Create
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleCreate)]
         public ActionResult Create()
         {
             var permissions = typeof(Permissions)
@@ -53,9 +53,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(vm);
         }
 
-        // POST: RoleController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleCreate)]
         public async Task<ActionResult> Create(RoleCreateVM model)
         {
             if (!ModelState.IsValid)
@@ -85,7 +85,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: RoleController/Edit/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleUpdate)]
         public async Task<ActionResult> Edit(string id)
         {
             var role = await roleManager.FindByIdAsync(id);
@@ -114,9 +114,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(vm);
         }
 
-        // POST: RoleController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleUpdate)]
         public async Task<IActionResult> Edit(string id, RoleUpdateVM vm)
         {
             var role = await roleManager.FindByIdAsync(id);
@@ -156,7 +156,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: RoleController/Delete/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleDelete)]
         public async Task<ActionResult> Delete(string id)
         {
             var role = await roleManager.FindByIdAsync(id);
@@ -167,9 +167,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return View(role);
         }
 
-        // POST: RoleController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.RoleDelete)]
         public async Task<ActionResult> Delete(string id, IFormCollection collection)
         {
             var role = await roleManager.FindByIdAsync(id);

@@ -6,7 +6,7 @@ using WebBanMayTinh.Authorization;
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [HasPermission(CustomClaimTypes.Permission, Permissions.ProductRead)]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.ProductImportAccess)]
     public class ProductImportController : Controller
     {
         private readonly DataContext _context;
@@ -17,6 +17,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         // XEM LỊCH SỬ NHẬP HÀNG
+        [HasPermission(CustomClaimTypes.Permission, Permissions.ProductImportRead)]
         public IActionResult Index()
         {
             var imports = _context.ProductImports

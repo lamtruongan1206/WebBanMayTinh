@@ -9,13 +9,12 @@ using WebBanMayTinh.Areas.Admin.Models.Views;
 using WebBanMayTinh.Authorization;
 using WebBanMayTinh.Models;
 using WebBanMayTinh.Services;
+using WebBanMayTinh.Utils;
 
 namespace WebBanMayTinh.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    //[Authorize(Roles = "Admin")]
-    [Authorize(Policy = $"permission:{Permissions.UserAccess}")]
-    //[HasPermission(Permissions.UserRead)]
+    [HasPermission(CustomClaimTypes.Permission, Permissions.UserAccess)]
     public class UserController : Controller
     {
         private readonly DataContext _context;
@@ -39,29 +38,64 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         [HasPermission(CustomClaimTypes.Permission, Permissions.UserRead)]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? role,
+            string? keyword,
+            int? page = 1,
+            int? pageSize = 4)
         {
-            var users = await _context.Users.ToListAsync();
-            var result = new List<UserVM>();
+            var query =
+                    from u in _context.Users
+                    join ur in _context.UserRoles on u.Id equals ur.UserId into urj
+                    from ur in urj.DefaultIfEmpty()
+                    join r in _context.Roles on ur.RoleId equals r.Id into rj
+                    from r in rj.DefaultIfEmpty()
+                    where
+                        (string.IsNullOrEmpty(keyword) ||
+                            u.UserName.Contains(keyword) ||
+                            u.FirstName.Contains(keyword) ||
+                            u.LastName.Contains(keyword) ||
+                            u.Email.Contains(keyword) ||
+                            u.Address.Contains(keyword) ||
+                            u.PhoneNumber.Contains(keyword))
+                        &&
+                        (string.IsNullOrEmpty(role) || r.Name == role)
+                    select u;
 
-            foreach (var user in users)
+            var pagedUsers = await query
+                .Distinct()
+                .OrderBy(u => u.LastName)
+                .ToPagedResultAsync(page.Value, pageSize.Value);
+
+            var items = new List<UserVM>();
+
+            ViewBag.Roles = _context.Roles.ToList();
+            ViewBag.Role = role ?? string.Empty;
+            ViewBag.Keyword = keyword ?? string.Empty;
+
+            foreach (var user in pagedUsers.Items)
             {
                 var roles = await _userManager.GetRolesAsync(user);
 
-                result.Add(new UserVM
+                items.Add(new UserVM
                 {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    PhoneNumber = user.PhoneNumber,
-                    Email = user.Email,
-                    FullName = user.FirstName + " " + user.LastName,
+                    User = user,
                     Roles = roles.ToList()
                 });
             }
 
+            var result = new PaginationResult<UserVM>(
+                items,
+                pagedUsers.TotalItems,
+                pagedUsers.CurrentPage,
+                pagedUsers.PageSize,
+                pagedUsers.TotalPages
+            );
+
             return View(result);
         }
 
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserRead)]
         public async Task<IActionResult> Details(string? id)
         {
             if (id == null)
@@ -71,27 +105,39 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(m => m.Id == id);
+
+            var roles = await _userManager.GetRolesAsync(user);
+
             if (user == null)
             {
                 return NotFound();
             }
 
-            return View(user);
+            return View(new UserDetailVM
+            {
+                Id = id,
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Address = user.Address,
+                EmailConfirmed = user.EmailConfirmed,
+                Roles = roles,
+            });
         }
 
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserCreate)]
         public async Task<IActionResult> Create()
         {
-            //var roles = await _context.Roles.ToListAsync();
-            //ViewBag.Roles = new SelectList(roles, "Id", "Name");
             return View(new UserCreateVM());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserCreate)]
         public async Task<IActionResult> Create(UserCreateVM userVM)
         {
-            //var roles = await _context.Roles.ToListAsync();
-            //ViewBag.Roles = new SelectList(roles, "Id", "Name");
 
             if (ModelState.IsValid)
             {
@@ -103,6 +149,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
                     LastName = userVM.LastName ?? "",
                     PhoneNumber = userVM.Phone,
                     Address = userVM.Address,
+                    EmailConfirmed = true
                 };
 
                 var ok = await userService.AddUser(user, userVM.Password);
@@ -122,7 +169,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             }
         }
 
-        // GET: AdminAccount/Edit/5
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserUpdate)]
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null)
@@ -135,8 +182,6 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            //var roles = await _context.Roles.ToListAsync();
-            //ViewBag.Roles = new SelectList(roles, "Id", "Name", userManager.GetRolesAsync(user));
             return View(new UserEditVM()
             {
                 Username = user.UserName,
@@ -150,10 +195,9 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserUpdate)]
         public async Task<IActionResult> Edit(string id, UserEditVM model)
         {
-            //var roles = await _context.Roles.ToListAsync();
-
             if (ModelState.IsValid)
             {
                     var currentUser = await _userManager.FindByIdAsync(id);
@@ -200,6 +244,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             }
         }
 
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserDelete)]
         public async Task<IActionResult> Delete(string? id)
         {
             if (id == null)
@@ -220,6 +265,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserDelete)]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -237,6 +283,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
             return _context.Users.Any(e => e.Id == id);
         }
 
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserPermission)]
         public async Task<IActionResult> Permission(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -265,6 +312,7 @@ namespace WebBanMayTinh.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [HasPermission(CustomClaimTypes.Permission, Permissions.UserPermission)]
         public async Task<IActionResult> Permission(string id, List<PermissionVM> model)
         {
             var user = await _userManager.FindByIdAsync(id);
