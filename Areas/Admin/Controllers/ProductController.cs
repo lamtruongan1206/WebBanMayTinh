@@ -85,15 +85,12 @@ namespace WebBanMayTinh.Areas.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoryId);
-                return View(dto);
-            }
-            if (ModelState.IsValid)
-            {
                 ViewBag.BrandId = new SelectList(_context.Brand, "Id", "Name", dto.BrandId);
                 return View(dto);
             }
 
-                if (dto.CategoryId == null || !_context.Categories.Any(c => c.Id == dto.CategoryId))
+
+            if (dto.CategoryId == null || !_context.Categories.Any(c => c.Id == dto.CategoryId))
             {
                 ModelState.AddModelError("CategoriesId", "Danh mục không tồn tại");
                 ViewBag.CategoriesId = new SelectList(_context.Categories, "Id", "Name", dto.CategoryId);
@@ -170,11 +167,7 @@ namespace WebBanMayTinh.Areas.Controllers
             }
 
             _context.SaveChanges();
-            return RedirectToAction(
-                     "Index",
-                      "Specification",
-                  new { area = "Admin", productId = product.Id });
-            //return RedirectToAction("Index");
+            return RedirectToAction("Index");
         }
 
         // ================== UPDATE ==================
@@ -308,7 +301,7 @@ namespace WebBanMayTinh.Areas.Controllers
             var computer = _context.Products
                 .Include(c => c.Images)
                 .Include(c=> c.Brand)
-                .Include(c => c.Category)
+                .Include(c => c.Category).Include(c => c.Carts)
                 .FirstOrDefault(c => c.Id == id);
 
             if (computer == null) return NotFound();
@@ -320,7 +313,10 @@ namespace WebBanMayTinh.Areas.Controllers
                 string fullPath = Path.Combine(wwwRoot, img.Url.TrimStart('/').Replace("/", "\\"));
                 if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
             }
-
+            if (computer.Carts != null && computer.Carts.Any())
+            {
+                _context.Carts.RemoveRange(computer.Carts);
+            }
             _context.Images.RemoveRange(computer.Images);
             _context.Products.Remove(computer);
             _context.SaveChanges();
