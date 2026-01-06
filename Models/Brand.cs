@@ -13,6 +13,6 @@ namespace WebBanMayTinh.Models
         public string? Description { get; set; }
         [MinLength(4)]
         public string? Slug { get; set; }
-        
+        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }
