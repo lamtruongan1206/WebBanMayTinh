@@ -41,7 +41,9 @@ namespace WebBanMayTinh.Services
 
         public async Task<IEnumerable<AppUser>> GetUsers()
         {
-            var users = await context.Users.ToListAsync();
+            var users = await context.Users
+                .Where(u => !u.IsDeleted.Value)
+                .ToListAsync();
             return users;
         }
 
@@ -49,13 +51,19 @@ namespace WebBanMayTinh.Services
         {
             var principal = httpContextAccessor.HttpContext?.User;
             if (principal is null) return null;
-            return await userManager.GetUserAsync(principal);
+            var user = await userManager.GetUserAsync(principal);
+
+            if(user is null) return null;
+            if (user.IsDeleted.Value) return null;
+
+            return user;
         }
 
         async Task<SignInResult> IUserService.Login(string username, string password)
         {
             var existingUser = await userManager.FindByNameAsync(username);
             if (existingUser == null) return SignInResult.Failed;
+            if (existingUser.IsDeleted.Value) return SignInResult.Failed;
 
             try
             {
@@ -71,6 +79,7 @@ namespace WebBanMayTinh.Services
         {
             var existingUser = await userManager.FindByEmailAsync(email);
             if (existingUser == null) return SignInResult.Failed;
+            if (existingUser.IsDeleted.Value) return SignInResult.Failed;
       
             try
             {
@@ -85,6 +94,8 @@ namespace WebBanMayTinh.Services
 
         async Task<IdentityResult> IUserService.Register(AppUser user, string password)
         {
+            user.IsDeleted = false;
+
             var existedUser = await userManager.FindByEmailAsync(user.Email);
 
             // Nếu tài khoản chưa comfirm thì cho xóa đi tạo lại
@@ -103,6 +114,8 @@ namespace WebBanMayTinh.Services
 
         async Task<bool> IUserService.AddUser(AppUser user, string password)
         {
+            user.IsDeleted = false;
+
             try
             {
                 var result = await userManager.CreateAsync(user, password);
@@ -128,25 +141,26 @@ namespace WebBanMayTinh.Services
 
         bool IUserService.DeleteUser(string id)
         {
-            //var user = context.Users.FirstOrDefault(x => x.Id == id);
-            //if (user == null)
-            //{
-            //    logger.LogWarning("Không tồn tại User id = {id}", id);
-            //    return false;
-            //}
+            var user = context.Users.FirstOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                logger.LogWarning("Không tồn tại User id = {id}", id);
+                return false;
+            }
 
-            //try
-            //{
-            //    context.Users.Remove(user);
-            //    context.SaveChanges();
-            //    return true;
-            //}
-            //catch (Exception ex)
-            //{
-            //    logger.LogError("Update User Error: {m}", ex.Message);
-            //    return false;
-            //}
-            throw new NotImplementedException();
+            try
+            {
+                user.IsDeleted = false;
+
+                context.Update(user);
+                context.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Update User Error: {m}", ex.Message);
+                return false;
+            }
         }
 
         async Task<AppUser> IUserService.GetUser(string id)
@@ -162,6 +176,8 @@ namespace WebBanMayTinh.Services
             {
                 return false;
             }
+
+            if (user.IsDeleted.Value) return false;
 
             var otp = Random.Shared.Next(100000, 999999).ToString();
 
@@ -189,6 +205,7 @@ namespace WebBanMayTinh.Services
         {
             var user = await GetCurrentUser();
             if (user == null) return false;
+
 
             var otpEntity = await context.PasswordOtps
                 .Where(x => x.UserId == user.Id && !x.IsUsed)
